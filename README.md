@@ -23,7 +23,7 @@
     
     DB_HOST=billing_db
     DB_PORT=5432
- 
+  
  docker-compose up -d
  TODO: BILLING API TO COMPOSE
 

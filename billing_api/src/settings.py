@@ -7,7 +7,7 @@ TORTOISE_CFG = {
         "default": {
             "engine": "tortoise.backends.asyncpg",
             "credentials": {
-                "host": "localhost",
+                "host": "billing_db",
                 "port": "5432",
                 "user": "jaqombo",
                 "password": "12345",

@@ -32,23 +32,36 @@ services:
       - db/.env.prod
     restart: always
 
+  billing_api:
+    build: billing_api
+    container_name: billing_api
+    command: python3 src/main.py
+    expose:
+      - 8787
+    depends_on:
+      - billing_db
+
   billing_nginx:
     build: nginx
     container_name: billing_nginx
     ports:
       - 9044:9044
+      - 8787:8787
     depends_on:
       - billing-admin-panel
+      - billing_api
     volumes:
       - billing_nginx_logs:/var/log/nginx/
       - static_volume:/usr/src/admin_panel/config/static
     restart: always
+
 
 volumes:
   billing_db_data:
   static_volume:
   billing_nginx_logs:
     name: billing_nginx_logs
+
 #networks:
 #  default:
 #    external:
