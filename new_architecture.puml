@@ -1,0 +1,48 @@
+@startuml
+
+skinparam BackgroundColor white
+skinparam componentStyle rectangle
+skinparam actorBorderColor black
+'skinparam linetype ortho
+
+actor Client #White
+actor "Content Manager" #White
+actor "Data Analysts" #White
+database "Movie DB" #White
+database "Elastic" #White
+component "ETL Service" #White
+component "Admin Panel" #White
+component "UGC Service" #White
+component "Payment Gateways"
+component "Billing Service" {
+component "Billing API" as b_api
+component "Scheduler" as b_scheduler
+component "Admin Panel" as b_admin
+database "PostgreSQL" as b_db
+actor "Billing Manager" as b_manager
+}
+
+component "Auth Service" as auth #White
+component "API Service" as api #White
+
+[api]<-right->[auth] : compare movie permissions\lwith user permissions
+[api]<-[#grey]->[Elastic]
+[Elastic]<-[#grey]-[ETL Service]
+[Movie DB]-[#grey]up->[ETL Service]
+[Admin Panel]<-[#grey]->[Movie DB]
+[Client]<-[#grey]->[api]
+[Client]<-[#grey]->[auth]
+[Content Manager]<-[#grey]->[Admin Panel]
+'ugc
+[api]-[#grey]left->[UGC Service]
+[Data Analysts] <-[#grey]-> [UGC Service]
+'billing
+b_manager <-up-> b_admin
+b_admin <-left-> b_db: manage subscriptions
+b_db <-down-> b_api: crud\loperations
+b_db -down-> b_scheduler : read\lsubscriptions\land orders
+'main schema and billing
+b_scheduler -> b_api
+[auth] <-down- [Billing Service] : change\luser\lroles
+[Payment Gateways] <-up-> b_api
+@enduml

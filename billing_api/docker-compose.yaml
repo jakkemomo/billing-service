@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  nginx-node:
+    image: nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./gui:/var/billing/static/
+      - ./nginx/configs/conf.d:/etc/nginx/conf.d

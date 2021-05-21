@@ -1,0 +1,6 @@
+FROM nginx:latest
+
+RUN rm /etc/nginx/conf.d/default.conf \
+    && rm -f /var/log/nginx/access.log
+COPY nginx.conf /etc/nginx/conf.d
+COPY default_nginx.conf /etc/nginx/nginx.conf
