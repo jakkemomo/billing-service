@@ -1,8 +1,8 @@
 import abc
 from distutils.util import strtobool
 
-from models.common import OrderState
-from .models import StripeChargeStatus, StripePaymentStatus
+from src.clients.stripe.models import StripePaymentStatus, StripeChargeStatus
+from src.models.common import OrderState
 
 
 class AbcPMDExtractor(abc.ABC):

@@ -1,8 +1,8 @@
 from aiohttp import ClientSession
-from clients.abstract import AbstractClient
-from clients.models import Payment, PaymentMethod, Refund
-from models.common import OrderState
-from orm.models import Orders
+from src.clients.abstract import AbstractClient
+from src.clients.models import Payment, PaymentMethod, Refund
+from src.models.common import OrderState
+from src.orm.models import Orders
 
 from .exceptions import (
     ArgumentValueError,

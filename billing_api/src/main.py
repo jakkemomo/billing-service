@@ -1,9 +1,9 @@
 import uvicorn
-from api.v1.service import service_router
-from api.v1.user import user_router
 from fastapi import FastAPI
-from orm.utils import tortoise_init, tortoise_release
-from settings import TORTOISE_CFG
+from src.api.v1.service import service_router
+from src.api.v1.user import user_router
+from src.orm.utils import tortoise_init, tortoise_release
+from src.settings import TORTOISE_CFG
 
 app = FastAPI()
 app.include_router(service_router, prefix="/api")

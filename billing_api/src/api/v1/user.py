@@ -1,27 +1,27 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from models.api import (
+from pydantic import parse_obj_as
+from src.models.api import (
     PaymentInfoIn,
     PaymentInfoOut,
     PaymentMethodOut,
     ProductOut,
     SubscriptionOut,
 )
-from models.common import OrderState, SubscriptionState
-from orm.models import PaymentMethods, Products
-from pydantic import parse_obj_as
-from repositories.order import OrderRepository
-from repositories.payment_method import PaymentMethodRepository
-from repositories.product import ProductRepository
-from repositories.subscription import SubscriptionRepository
-from services.payment_gateway import (
+from src.models.common import OrderState, SubscriptionState
+from src.orm.models import PaymentMethods, Products
+from src.repositories.order import OrderRepository
+from src.repositories.payment_method import PaymentMethodRepository
+from src.repositories.product import ProductRepository
+from src.repositories.subscription import SubscriptionRepository
+from src.services.payment_gateway import (
     PaymentGatewayService,
     get_payment_gateway_service,
 )
-from services.roles import RolesService, get_roles_service
-from utils.auth import AuthorizedUser, get_user
-from utils.refund import calculate_refund_amount
+from src.services.roles import RolesService, get_roles_service
+from src.utils.auth import AuthorizedUser, get_user
+from src.utils.refund import calculate_refund_amount
 
 user_router = APIRouter()
 

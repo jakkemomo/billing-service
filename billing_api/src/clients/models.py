@@ -1,7 +1,7 @@
 from typing import Optional
 
-from models.common import OrderState
 from pydantic import BaseModel
+from src.models.common import OrderState
 
 
 class PaymentMethod(BaseModel):

@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import uuid4
 
-from orm.models import PaymentMethods
+from src.orm.models import PaymentMethods
 from tortoise import timezone
 
 

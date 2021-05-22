@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from models.common import OrderState, SubscriptionState
+from src.models.common import OrderState, SubscriptionState
 from tortoise import fields
 from tortoise.models import Model
 

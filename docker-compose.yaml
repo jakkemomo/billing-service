@@ -30,7 +30,7 @@ services:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init_schema.sql
     env_file:
       - db/.env.prod
-    restart: always
+    restart: unless-stopped
 
   billing_api:
     build: billing_api
@@ -55,13 +55,11 @@ services:
       - static_volume:/usr/src/admin_panel/config/static
     restart: always
 
-
 volumes:
   billing_db_data:
   static_volume:
   billing_nginx_logs:
     name: billing_nginx_logs
-
 #networks:
 #  default:
 #    external:
