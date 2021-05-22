@@ -1,12 +1,10 @@
 import abc
 
-from src.models.common import OrderState
+from src.models.common import OrderState, Payment, PaymentMethod, Refund
 from src.orm.models import Orders
 
-from .models import Payment, PaymentMethod, Refund
 
-
-class AbstractClient:
+class AbstractAdapter:
     @abc.abstractmethod
     async def get_payment_status(self, order: Orders, **kwargs) -> OrderState:
         pass

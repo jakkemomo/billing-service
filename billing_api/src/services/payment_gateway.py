@@ -1,12 +1,11 @@
-from billing_api.src.clients.abstract import AbstractClient
-from billing_api.src.clients.models import Payment, PaymentMethod, Refund
-from billing_api.src.clients.stripe.client import get_stripe_client
-from billing_api.src.models.common import OrderState
-from billing_api.src.orm.models import Orders
+from src.adapters.abstract import AbstractAdapter
+from src.adapters.stripe import get_stripe_adapter
+from src.models.common import OrderState, Payment, PaymentMethod, Refund
+from src.orm.models import Orders
 
 
 class PaymentGatewayService:
-    def __init__(self, order: Orders, client: AbstractClient):
+    def __init__(self, order: Orders, client: AbstractAdapter):
         self.order = order
         self.client = client
 
@@ -32,14 +31,11 @@ class PaymentGatewayService:
         return await self.client.get_refund_status(self.order)
 
 
-def get_payment_gateway(order: Orders) -> AbstractClient:
-    adapters = {"stripe": get_stripe_client}
-
-    def raise_if_no_service():
-        raise ValueError(f"Could not find payment service for current order: {order.id}")
-
-    adapter = adapters.get(order.payment_system, raise_if_no_service)
-    return adapter()
+def get_payment_gateway(order: Orders) -> AbstractAdapter:
+    if order.payment_system == "stripe":
+        return get_stripe_adapter()
+    else:
+        raise ValueError(f"Could not find payment service for order {order.id}")
 
 
 async def get_payment_gateway_service(order: Orders) -> PaymentGatewayService:
