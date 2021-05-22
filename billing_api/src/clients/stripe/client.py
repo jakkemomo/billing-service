@@ -3,6 +3,7 @@ from src.clients.abstract import AbstractClient
 from src.clients.models import Payment, PaymentMethod, Refund
 from src.models.common import OrderState
 from src.orm.models import Orders
+from src.settings import STRIPE_API_KEY
 
 from .exceptions import (
     ArgumentValueError,
@@ -23,7 +24,7 @@ from .models import (
 )
 from .utils import extract_payment_state, get_pmd_extractor, map_refund_status
 
-API_KEY = "sk_test_51Imm7vKDxYta8liOnRXex80p2LNsuFbTimUwRI1x4I72EEuqw2xQjUyEpyd1yhnprGL8cYY1bYt6ZInMP0MBY2TG00F4HWdvIa"
+API_KEY = STRIPE_API_KEY
 
 
 class StripeClient(AbstractClient):
