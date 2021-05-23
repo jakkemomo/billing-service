@@ -34,19 +34,6 @@ class SubscriptionRepository:
             modified=now,
         )
 
-    # @staticmethod
-    # async def create(user_id: str, product_id: str) -> Subscriptions:
-    #     return await Subscriptions.create(
-    #         id=uuid4(),
-    #         user_id=user_id,
-    #         product_id=product_id,
-    #         state=SubscriptionState.INACTIVE,
-    #         start_date=None,
-    #         end_date=None,
-    #         created=timezone.now(),
-    #         modified=timezone.now(),
-    #     )
-
     @staticmethod
     async def activate(subscription_id: str, period: int):
         await Subscriptions.filter(pk=subscription_id).update(
