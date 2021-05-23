@@ -1,8 +1,9 @@
+from datetime import date
 from uuid import UUID
 
 from pydantic import BaseModel
 
-from .common import PaymentSystem
+from .common import OrderState, PaymentSystem
 
 
 class PaymentInfoIn(BaseModel):
@@ -14,7 +15,6 @@ class PaymentInfoIn(BaseModel):
 class PaymentInfoOut(BaseModel):
     payment_system: str
     client_secret: str
-    is_new: bool
 
 
 class PaymentMethodOut(BaseModel):
@@ -26,6 +26,7 @@ class PaymentMethodOut(BaseModel):
 
 
 class ProductOut(BaseModel):
+    id: UUID
     name: str
     description: str
     price: str
@@ -34,6 +35,14 @@ class ProductOut(BaseModel):
 
 
 class SubscriptionOut(BaseModel):
-    product_name: str
-    start_date: str
-    end_date: str
+    product: ProductOut
+    start_date: date
+    end_date: date
+
+
+class OrderOut(BaseModel):
+    product: ProductOut
+    payment_system: PaymentSystem
+    state: OrderState
+    payment_amount: float
+    payment_currency_code: str

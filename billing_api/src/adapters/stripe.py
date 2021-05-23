@@ -22,7 +22,10 @@ class StripeClientAdapter(AbstractAdapter):
         return convert_payment_state(payment)
 
     async def create_payment(self, order: Orders, **kwargs) -> Payment:
-        customer = await self.client.create_customer(order.user_id, order.user_email)
+        customer = await self.client.create_customer(
+            str(order.user_id),
+            order.user_email,
+        )
         stripe_payment = await self.client.create_payment(
             customer.id,
             convert_price(order.payment_amount),
@@ -37,7 +40,7 @@ class StripeClientAdapter(AbstractAdapter):
 
     async def create_recurring_payment(self, order: Orders, **kwargs) -> Payment:
         stripe_payment = await self.client.create_recurring_payment(
-            order.user_id,
+            str(order.user_id),
             convert_price(order.payment_amount),
             order.payment_currency_code,
             order.payment_method.external_id,
