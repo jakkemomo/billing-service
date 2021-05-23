@@ -33,10 +33,13 @@ class PaymentGatewayService:
 
 
 def get_payment_gateway(order: Orders) -> AbstractClient:
-    if order.payment_system == "stripe":
-        return get_stripe_client()
-    else:
-        raise ValueError(f"Could not find payment service for order {order.id}")
+    adapters = {"stripe": get_stripe_client}
+
+    def raise_if_no_service():
+        raise ValueError(f"Could not find payment service for current order: {order.id}")
+
+    adapter = adapters.get(order.payment_system, raise_if_no_service)
+    return adapter()
 
 
 async def get_payment_gateway_service(order: Orders) -> PaymentGatewayService:
