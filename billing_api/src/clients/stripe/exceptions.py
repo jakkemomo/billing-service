@@ -1,34 +1,43 @@
+from .models import HTTPResponse
+
+
 class StripeBaseException(Exception):
-    pass
+    def __init__(self, response: HTTPResponse, *args):
+        super().__init__(*args)
+        self._response = response
+
+    @property
+    def response(self):
+        return self._response
 
 
-class ArgumentValueError(StripeBaseException):
-    msg = "Argument has wrong value"
+class Unauthorized(StripeBaseException):
+    msg = "No valid API key provided"
 
 
-class ArgumentOmittedError(StripeBaseException):
-    msg = "Argument is omitted"
+class Forbidden(StripeBaseException):
+    msg = "The API key doesn't have permissions to perform the request"
 
 
 class TooManyRequests(StripeBaseException):
-    msg = "Too many requests"
+    msg = "Too many requests hit the API too quickly"
 
 
-class ResourceNotFound(StripeBaseException):
-    msg = "Resource does not exists"
+class NotFound(StripeBaseException):
+    msg = "The requested resource doesn't exist"
 
 
 class BadRequest(StripeBaseException):
-    msg = "Missing a required parameter"
+    msg = "The request was unacceptable, often due to missing a required parameter"
 
 
 class RequestFailed(StripeBaseException):
-    msg = "Request failed"
+    msg = "The parameters were valid but the request failed"
 
 
-class RequestConflict(StripeBaseException):
-    msg = "Request conflicts"
+class Conflict(StripeBaseException):
+    msg = "The request conflicts with another request"
 
 
-class StripeInternalError(StripeBaseException):
-    msg = "Stripe internal error"
+class InternalError(StripeBaseException):
+    msg = "Something went wrong on Stripe's end"
