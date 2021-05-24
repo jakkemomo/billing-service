@@ -55,8 +55,7 @@ class StripeClient:
                     status=resp.status,
                     body=await resp.json(),
                 )
-                handle_response(http_response)
-                return http_response
+                return handle_response(http_response)
 
     async def _get(self, entity: str, entity_id: str) -> HTTPResponse:
         method = "GET"
