@@ -1,7 +1,10 @@
-from aiohttp import ClientSession
-from utils.exception_handlers import handle_response
+import logging
+from uuid import uuid4
 
-from .exceptions import BadRequest, RequestFailed
+import backoff
+from aiohttp import ClientConnectorError, ClientSession, ServerConnectionError
+
+from .exceptions import BadRequest, RequestFailed, TooManyRequests
 from .models import (
     HTTPResponse,
     StripeCustomerInner,
@@ -11,6 +14,13 @@ from .models import (
     StripeRefund,
     StripeRefundInner,
 )
+from .utils.exception_handlers import handle_response
+
+BACKOFF_FACTOR = 1
+BACKOFF_BASE = 2
+BACKOFF_MAX_VALUE = 30
+
+logger = logging.getLogger(__name__)
 
 
 class StripeClient:
@@ -19,6 +29,13 @@ class StripeClient:
     def __init__(self, api_key: str):
         self.api_key = api_key
 
+    @backoff.on_exception(
+        backoff.expo,
+        (TooManyRequests, ClientConnectorError, ServerConnectionError),
+        base=BACKOFF_BASE,
+        factor=BACKOFF_FACTOR,
+        max_value=BACKOFF_MAX_VALUE,
+    )
     async def _request(
         self,
         method: str,
@@ -48,7 +65,10 @@ class StripeClient:
 
     async def _create(self, entity: str, **kwargs) -> HTTPResponse:
         method = "POST"
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Idempotency-Key": uuid4(),
+        }
         url = f"{self.URL}/{entity}s"
         return await self._request(method, url, data=kwargs, headers=headers)
 
