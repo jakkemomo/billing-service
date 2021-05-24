@@ -16,7 +16,7 @@ from src.repositories.order import OrderRepository
 from src.repositories.payment_method import PaymentMethodRepository
 from src.repositories.product import ProductRepository
 from src.repositories.subscription import SubscriptionRepository
-from src.utils.auth import AuthorizedUser, get_user
+from src.services.auth import AuthorizedUser, get_user
 from src.utils.refund import calculate_refund_amount
 from tortoise.transactions import in_transaction
 

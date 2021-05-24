@@ -34,10 +34,23 @@ class BackoffSettings(BaseSettings):
     max_value: float = Field(None, env="BACKOFF_MAX_VALUE")
 
 
+class AuthSettings(BaseSettings):
+    debug: int = Field(1, env="AUTH_DEBUG")
+    debug_user_id: str = Field("debug-user-id", env="DEBUG_USER_ID")
+    scheme: str = Field("http")
+    host: str = Field("localhost", env="AUTH_HOST")
+    port: int = Field(8000, env="AUTH_PORT")
+    pubkey_path: str = Field("api/v1/pubkey", env="AUTH_PUBKEY_PATH")
+
+    def get_url(self):
+        return f"{self.scheme}://{self.host}:{self.port}/{self.pubkey_path}"
+
+
 class Settings(BaseSettings):
     stripe: StripeSettings = StripeSettings()
     db: DatabaseSettings = DatabaseSettings()
     backoff: BackoffSettings = BackoffSettings()
+    auth: AuthSettings = AuthSettings()
 
 
 settings = Settings.parse_file(DEFAULT_CONFIG_PATH)
