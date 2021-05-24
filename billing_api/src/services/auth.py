@@ -69,7 +69,7 @@ async def get_user(
 ) -> Optional[AuthorizedUser]:
     auth_debug = settings.auth.debug
     debug_user_id = settings.auth.debug_user_id
-    auth_service_url = settings.auth.get_url()
+    auth_service_url = settings.auth.get_pubkey_url()
 
     if auth_debug:
         debug_claims = {
