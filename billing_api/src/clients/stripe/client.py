@@ -20,7 +20,7 @@ from .models import (
 
 
 class StripeClient:
-    URL = "https://api.stripe.com/v1/"
+    URL = "https://api.stripe.com/v1"
 
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -58,13 +58,13 @@ class StripeClient:
 
     async def _get(self, entity: str, entity_id: str) -> HTTPResponse:
         method = "GET"
-        url = "%s%ss/%s" % (self.URL, entity, entity_id)
+        url = f"{self.URL}/{entity}s/{entity_id}"
         return await self._request(method, url)
 
     async def _create(self, entity: str, **kwargs) -> HTTPResponse:
         method = "POST"
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        url = "%s%ss" % (self.URL, entity)
+        url = f"{self.URL}/{entity}s"
         return await self._request(method, url, data=kwargs, headers=headers)
 
     async def create_customer(

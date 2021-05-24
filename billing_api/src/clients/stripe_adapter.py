@@ -1,15 +1,15 @@
-from src.clients.stripe.client import StripeClient
-from src.clients.stripe.utils import (
-    convert_payment_state,
-    convert_refund_status,
-    convert_to_decimal,
-    convert_to_int,
-    get_pmd_extractor,
-)
 from src.models.common import OrderState, Payment, PaymentMethod, Refund
 from src.orm.models import Orders
 
 from .abstract import AbstractClientAdapter
+from .stripe.client import StripeClient
+from .stripe.utils.converters import (
+    convert_payment_state,
+    convert_refund_status,
+    convert_to_decimal,
+    convert_to_int,
+)
+from .stripe.utils.extractors import get_pmd_extractor
 
 API_KEY = "sk_test_51Imm7vKDxYta8liOnRXex80p2LNsuFbTimUwRI1x4I72EEuqw2xQjUyEpyd1yhnprGL8cYY1bYt6ZInMP0MBY2TG00F4HWdvIa"
 

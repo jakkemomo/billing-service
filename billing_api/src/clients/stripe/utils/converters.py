@@ -1,33 +1,8 @@
-import abc
 from decimal import Decimal
+
+from src.clients.stripe.models import StripePaymentIntent
 from src.clients.stripe.models import StripePaymentStatus, StripeChargeStatus
 from src.models.common import OrderState
-from .models import StripePaymentIntent
-
-
-class AbcPMDExtractor(abc.ABC):
-    @staticmethod
-    @abc.abstractmethod
-    def extract(data: dict) -> dict:
-        pass
-
-
-class CardDataExtractor(AbcPMDExtractor):
-    @staticmethod
-    def extract(data: dict) -> dict:
-        return {
-            'brand': data['brand'],
-            'exp_month': data['exp_month'],
-            'exp_year': data['exp_year'],
-            'last4': data['last4'],
-        }
-
-
-def get_pmd_extractor(pm_type: str) -> AbcPMDExtractor:
-    if pm_type == 'card':
-        return CardDataExtractor()
-    else:
-        raise ValueError()
 
 
 def convert_payment_state(payment_intent: StripePaymentIntent) -> OrderState:
