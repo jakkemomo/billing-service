@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -26,19 +26,19 @@ class HTTPResponse:
     body: dict
 
 
-class StripeCustomer(BaseModel):
+class StripeCustomerInner(BaseModel):
     id: str
     email: Optional[str]
 
 
-class StripePayment(BaseModel):
+class StripePaymentIntentInner(BaseModel):
     customer: str
     amount: int
     currency: str
     setup_future_usage: str = "off_session"
 
 
-class StripeRecurringPayment(BaseModel):
+class StripeRecurringPaymentInner(BaseModel):
     customer: str
     amount: int
     currency: str
@@ -47,6 +47,38 @@ class StripeRecurringPayment(BaseModel):
     confirm: bool = True
 
 
-class StripeRefund(BaseModel):
+class StripeRefundInner(BaseModel):
     payment_intent: str
     amount: int
+
+
+class Charge(BaseModel):
+    id: str
+    payment_method: str
+    payment_method_details: dict
+    status: StripeChargeStatus
+
+
+class Charges(BaseModel):
+    data: List[Charge]
+
+
+class Metadata(BaseModel):
+    is_automatic: bool
+
+
+class StripePaymentIntent(BaseModel):
+    id: str
+    client_secret: Optional[str]
+    status: StripePaymentStatus
+    charges: Charges
+    metadata: Metadata
+
+
+class StripeRefund(BaseModel):
+    id: str
+    amount: int
+    currency: str
+    reason: Optional[str]
+    payment_intent: str
+    status: StripeChargeStatus

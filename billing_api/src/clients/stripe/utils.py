@@ -1,8 +1,8 @@
 import abc
-from distutils.util import strtobool
-
+from decimal import Decimal
 from src.clients.stripe.models import StripePaymentStatus, StripeChargeStatus
 from src.models.common import OrderState
+from .models import StripePaymentIntent
 
 
 class AbcPMDExtractor(abc.ABC):
@@ -30,11 +30,7 @@ def get_pmd_extractor(pm_type: str) -> AbcPMDExtractor:
         raise ValueError()
 
 
-def str_to_bool(value: str) -> bool:
-    return bool(strtobool(value))
-
-
-def extract_payment_state(data: dict) -> OrderState:
+def convert_payment_state(payment_intent: StripePaymentIntent) -> OrderState:
     """
     Замечание: В процессе работы не рассматриваем состояние `requires_confirmation`, оно не используется
     при оплате в нашем случае.
@@ -48,11 +44,11 @@ def extract_payment_state(data: dict) -> OrderState:
        он может ввести данные другой карты.
     4. Оплатил, но оплата проходит долго (PENDING). В этом случае выставляем PROCESSING.
     """
-    is_automatic = str_to_bool(data['metadata']['is_automatic'])
-    pi_status = StripePaymentStatus(data['status'])
-    charges = data['charges']['data']
+    is_automatic = payment_intent.metadata.is_automatic
+    pi_status = payment_intent.status
+    charges = payment_intent.charges.data
     charge = charges[0] if charges else None
-    charge_status = StripeChargeStatus(charge['status']) if charge else None
+    charge_status = charge.status if charge else None
 
     if pi_status == StripePaymentStatus.SUCCEEDED:
         return OrderState.PAID
@@ -82,7 +78,7 @@ def extract_payment_state(data: dict) -> OrderState:
         return OrderState.PROCESSING
 
 
-def map_refund_status(status: StripeChargeStatus) -> OrderState:
+def convert_refund_status(status: StripeChargeStatus) -> OrderState:
     """Отображение статуса возврата на статус заказа.
 
     Так как в процессе работы рассматриваем возврат как заказ, то необходимо выполнить
@@ -95,3 +91,11 @@ def map_refund_status(status: StripeChargeStatus) -> OrderState:
         StripeChargeStatus.SUCCEEDED: OrderState.PAID,
     }
     return mapping[status]
+
+
+def convert_to_int(price: Decimal) -> int:
+    return int(price * 100)
+
+
+def convert_to_decimal(price: int) -> Decimal:
+    return Decimal(price / 100)

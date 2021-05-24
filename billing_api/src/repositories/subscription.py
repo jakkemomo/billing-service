@@ -44,16 +44,15 @@ class SubscriptionRepository:
         )
 
     @staticmethod
-    async def deactivate(
-        subscription_id: str, state: SubscriptionState = SubscriptionState.INACTIVE
-    ):
+    async def deactivate(subscription_id: str):
         await Subscriptions.filter(pk=subscription_id).update(
-            state=state,
+            state=SubscriptionState.INACTIVE,
             modified=timezone.now(),
         )
 
     @staticmethod
-    async def has_user_active_subscription(user_id: str) -> bool:
-        return await Subscriptions.exists(
-            user_id=user_id, state=SubscriptionState.ACTIVE
+    async def cancel(subscription_id: str):
+        await Subscriptions.filter(pk=subscription_id).update(
+            state=SubscriptionState.CANCELLED,
+            modified=timezone.now(),
         )

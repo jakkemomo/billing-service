@@ -1,12 +1,6 @@
 from aiohttp import ClientSession
-from src.clients.abstract import AbstractClient
-from src.clients.models import Payment, PaymentMethod, Refund
-from src.models.common import OrderState
-from src.orm.models import Orders
-from src.settings import STRIPE_API_KEY
 
 from .exceptions import (
-    ArgumentValueError,
     BadRequest,
     RequestConflict,
     RequestFailed,
@@ -16,18 +10,16 @@ from .exceptions import (
 )
 from .models import (
     HTTPResponse,
-    StripeChargeStatus,
-    StripeCustomer,
-    StripePayment,
-    StripeRecurringPayment,
+    StripeCustomerInner,
+    StripePaymentIntent,
+    StripePaymentIntentInner,
+    StripeRecurringPaymentInner,
     StripeRefund,
+    StripeRefundInner,
 )
-from .utils import extract_payment_state, get_pmd_extractor, map_refund_status
-
-API_KEY = STRIPE_API_KEY
 
 
-class StripeClient(AbstractClient):
+class StripeClient:
     URL = "https://api.stripe.com/v1/"
 
     def __init__(self, api_key: str):
@@ -75,8 +67,10 @@ class StripeClient(AbstractClient):
         url = "%s%ss" % (self.URL, entity)
         return await self._request(method, url, data=kwargs, headers=headers)
 
-    async def create_customer(self, user_id: str, email: str = None) -> StripeCustomer:
-        customer: StripeCustomer = StripeCustomer(
+    async def create_customer(
+        self, user_id: str, email: str = None
+    ) -> StripeCustomerInner:
+        customer: StripeCustomerInner = StripeCustomerInner(
             id=user_id,
             email=email,
         )
@@ -93,11 +87,7 @@ class StripeClient(AbstractClient):
 
         return customer
 
-    async def get_payment_status(self, order: Orders, **kwargs) -> OrderState:
-        payment_intent_id = order.external_id
-        if not payment_intent_id:
-            raise ArgumentValueError("`Order.external_id` must have not `None` value")
-
+    async def get_payment(self, payment_intent_id: str) -> StripePaymentIntent:
         resp = await self._get("payment_intent", payment_intent_id)
 
         if resp.status == 400:
@@ -109,38 +99,19 @@ class StripeClient(AbstractClient):
         if resp.status == 404:
             raise ResourceNotFound()
 
-        return extract_payment_state(resp.body)
+        return StripePaymentIntent.parse_obj(resp.body)
 
-    async def get_payment(self, order: Orders, **kwargs) -> Payment:
-        resp = await self._get("payment_intent", order.external_id)
-
-        if resp.status == 400:
-            raise BadRequest()
-
-        if resp.status == 402:
-            raise RequestFailed()
-
-        if resp.status == 404:
-            raise ResourceNotFound()
-
-        return Payment(
-            id=resp.body["id"],
-            client_secret=resp.body["client_secret"],
-            is_automatic=bool(int(resp.body["metadata"]["is_automatic"])),
-            state=extract_payment_state(resp.body),
-        )
-
-    async def create_payment(self, order: Orders, **kwargs) -> Payment:
-        customer = await self.create_customer(str(order.user_id), order.user_email)
-
+    async def create_payment(
+        self, customer_id: str, amount: int, currency: str
+    ) -> StripePaymentIntent:
         metadata = {
             "metadata[is_automatic]": 0,
         }
 
-        payment: StripePayment = StripePayment(
-            customer=customer.id,
-            amount=self._convert_price(order.payment_amount),
-            currency=order.payment_currency_code,
+        payment: StripePaymentIntentInner = StripePaymentIntentInner(
+            customer=customer_id,
+            amount=amount,
+            currency=currency,
         )
 
         data = {**payment.dict(), **metadata}
@@ -153,23 +124,24 @@ class StripeClient(AbstractClient):
         if resp.status == 402:
             raise RequestFailed()
 
-        return Payment(
-            id=resp.body["id"],
-            client_secret=resp.body["client_secret"],
-            is_automatic=False,
-            state=extract_payment_state(resp.body),
-        )
+        return StripePaymentIntent.parse_obj(resp.body)
 
-    async def create_recurring_payment(self, order: Orders, **kwargs) -> Payment:
+    async def create_recurring_payment(
+        self,
+        customer_id: str,
+        amount: int,
+        currency: str,
+        payment_method_id: str,
+    ) -> StripePaymentIntent:
         metadata = {
             "metadata[is_automatic]": 1,
         }
 
-        payment: StripeRecurringPayment = StripeRecurringPayment(
-            customer=str(order.user_id),
-            amount=self._convert_price(order.payment_amount),
-            currency=order.payment_currency_code,
-            payment_method=order.payment_method.external_id,
+        payment: StripeRecurringPaymentInner = StripeRecurringPaymentInner(
+            customer=customer_id,
+            amount=amount,
+            currency=currency,
+            payment_method=payment_method_id,
         )
 
         data = {**payment.dict(), **metadata}
@@ -182,14 +154,10 @@ class StripeClient(AbstractClient):
         if resp.status == 402:
             resp.body = resp.body["error"]["payment_intent"]
 
-        return Payment(
-            id=resp.body["id"],
-            is_automatic=True,
-            state=extract_payment_state(resp.body),
-        )
+        return StripePaymentIntent.parse_obj(resp.body)
 
-    async def get_refund_status(self, order: Orders, **kwargs) -> OrderState:
-        resp = await self._get("refund", order.external_id)
+    async def get_refund(self, refund_id: str) -> StripeRefund:
+        resp = await self._get("refund", refund_id)
 
         if resp.status == 400:
             raise BadRequest()
@@ -200,12 +168,12 @@ class StripeClient(AbstractClient):
         if resp.status == 404:
             raise ResourceNotFound()
 
-        return map_refund_status(StripeChargeStatus(resp.body["status"]))
+        return StripeRefund.parse_obj(resp.body)
 
-    async def create_refund(self, order: Orders, **kwargs) -> Refund:
-        refund: StripeRefund = StripeRefund(
-            payment_intent=order.src_order.external_id,
-            amount=self._convert_price(order.payment_amount),
+    async def create_refund(self, payment_intent_id: str, amount: int) -> StripeRefund:
+        refund: StripeRefundInner = StripeRefundInner(
+            payment_intent=payment_intent_id,
+            amount=amount,
         )
 
         resp = await self._create("refund", **refund.dict())
@@ -216,44 +184,4 @@ class StripeClient(AbstractClient):
         if resp.status == 402:
             raise RequestFailed()
 
-        return Refund(
-            id=resp.body["id"],
-            amount=resp.body["amount"],
-            currency=resp.body["currency"],
-            payment_intent_id=resp.body["payment_intent"],
-            state=map_refund_status(StripeChargeStatus(resp.body["status"])),
-        )
-
-    async def get_payment_method(self, order: Orders, **kwargs) -> PaymentMethod:
-        resp = await self._get("payment_intent", order.external_id)
-
-        if resp.status == 400:
-            raise BadRequest()
-
-        if resp.status == 402:
-            raise RequestFailed()
-
-        if resp.status == 404:
-            raise ResourceNotFound()
-
-        charge = resp.body["charges"]["data"][0]
-        payment_method = charge["payment_method_details"]
-
-        _id = charge["payment_method"]
-        _type = payment_method["type"]
-        pmd_extractor = get_pmd_extractor(_type)
-        data = pmd_extractor.extract(payment_method[_type])
-
-        return PaymentMethod(
-            id=_id,
-            type=_type,
-            data=data,
-        )
-
-    @staticmethod
-    def _convert_price(price: float):
-        return price * 100
-
-
-def get_stripe_client() -> StripeClient:
-    return StripeClient(API_KEY)
+        return StripeRefund.parse_obj(resp.body)
