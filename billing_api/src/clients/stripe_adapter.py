@@ -1,8 +1,9 @@
 from src.clients.stripe.client import StripeClient
 from src.clients.stripe.utils import (
     convert_payment_state,
-    convert_price,
     convert_refund_status,
+    convert_to_decimal,
+    convert_to_int,
     get_pmd_extractor,
 )
 from src.models.common import OrderState, Payment, PaymentMethod, Refund
@@ -28,7 +29,7 @@ class StripeClientAdapter(AbstractClientAdapter):
         )
         stripe_payment = await self.client.create_payment(
             customer.id,
-            convert_price(order.payment_amount),
+            convert_to_int(order.payment_amount),
             order.payment_currency_code,
         )
         return Payment(
@@ -41,7 +42,7 @@ class StripeClientAdapter(AbstractClientAdapter):
     async def create_recurring_payment(self, order: Orders, **kwargs) -> Payment:
         stripe_payment = await self.client.create_recurring_payment(
             str(order.user_id),
-            convert_price(order.payment_amount),
+            convert_to_int(order.payment_amount),
             order.payment_currency_code,
             order.payment_method.external_id,
         )
@@ -58,11 +59,11 @@ class StripeClientAdapter(AbstractClientAdapter):
     async def create_refund(self, order: Orders, **kwargs) -> Refund:
         refund = await self.client.create_refund(
             order.src_order.external_id,
-            convert_price(order.payment_amount),
+            convert_to_int(order.payment_amount),
         )
         return Refund(
             id=refund.id,
-            amount=refund.amount,
+            amount=convert_to_decimal(refund.amount),
             currency=refund.currency,
             payment_intent_id=refund.payment_intent,
             state=convert_refund_status(refund.status),

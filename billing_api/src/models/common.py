@@ -1,3 +1,4 @@
+from decimal import Decimal
 from enum import Enum
 from typing import Optional
 
@@ -36,7 +37,7 @@ class Payment(BaseModel):
 
 class Refund(BaseModel):
     id: str
-    amount: int
+    amount: Decimal
     currency: str
     payment_intent_id: str
     state: OrderState

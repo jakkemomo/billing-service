@@ -37,7 +37,7 @@ class Products(AbstractModel):
     name = fields.CharField(max_length=255, null=False)
     description = fields.TextField()
     role_id = fields.UUIDField(null=False)
-    price = fields.FloatField(null=False)
+    price = fields.DecimalField(max_digits=10, decimal_places=2, null=False)
     currency_code = fields.CharField(max_length=3, null=False)
     period = fields.IntField(null=False)
     active = fields.BooleanField(default=False, null=False)
@@ -86,7 +86,7 @@ class Orders(AbstractModel):
         on_delete=fields.RESTRICT,
         null=True,
     )
-    payment_amount = fields.FloatField(null=False)
+    payment_amount = fields.DecimalField(max_digits=10, decimal_places=2, null=False)
     payment_currency_code = fields.CharField(max_length=3, null=False)
     state: OrderState = fields.CharEnumField(OrderState, default=OrderState.DRAFT)
     is_refund = fields.BooleanField(default=False, null=False)

@@ -1,5 +1,5 @@
 import abc
-
+from decimal import Decimal
 from src.clients.stripe.models import StripePaymentStatus, StripeChargeStatus
 from src.models.common import OrderState
 from .models import StripePaymentIntent
@@ -93,5 +93,9 @@ def convert_refund_status(status: StripeChargeStatus) -> OrderState:
     return mapping[status]
 
 
-def convert_price(price: float):
-    return price * 100
+def convert_to_int(price: Decimal) -> int:
+    return int(price * 100)
+
+
+def convert_to_decimal(price: int) -> Decimal:
+    return Decimal(price / 100)

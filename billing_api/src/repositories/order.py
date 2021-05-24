@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Optional
 from uuid import uuid4
 
@@ -40,7 +41,7 @@ class OrderRepository:
         product_id: str,
         subscription_id: str,
         payment_system: str,
-        amount: float,
+        amount: Decimal,
         payment_currency_code: str,
         state: OrderState = OrderState.DRAFT,
         external_id: Optional[str] = None,
@@ -90,7 +91,7 @@ class OrderRepository:
         )
 
     @staticmethod
-    async def create_refund_order(order: Orders, amount: float) -> Orders:
+    async def create_refund_order(order: Orders, amount: Decimal) -> Orders:
         refund_order = await Orders.create(
             id=uuid4(),
             user_id=order.user_id,

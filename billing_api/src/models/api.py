@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -20,7 +21,7 @@ class PaymentInfoOut(BaseModel):
 class PaymentMethodOut(BaseModel):
     id: UUID
     type: str
-    payment_system: str
+    payment_system: PaymentSystem
     is_default: bool
     data: dict
 
@@ -29,9 +30,9 @@ class ProductOut(BaseModel):
     id: UUID
     name: str
     description: str
-    price: str
+    price: Decimal
     currency_code: str
-    period: str
+    period: int
 
 
 class SubscriptionOut(BaseModel):
@@ -44,5 +45,5 @@ class OrderOut(BaseModel):
     product: ProductOut
     payment_system: PaymentSystem
     state: OrderState
-    payment_amount: float
+    payment_amount: Decimal
     payment_currency_code: str
