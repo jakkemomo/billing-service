@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.clients import get_payment_gateway
+from src.db.models import Orders
+from src.db.repositories.order import OrderRepository
+from src.db.repositories.payment_method import PaymentMethodRepository
+from src.db.repositories.subscription import SubscriptionRepository
 from src.models.common import OrderState, SubscriptionState
-from src.orm.models import Orders
-from src.repositories.order import OrderRepository
-from src.repositories.payment_method import PaymentMethodRepository
-from src.repositories.subscription import SubscriptionRepository
 from src.services.roles import RolesService, get_roles_service
 from tortoise.transactions import in_transaction
 

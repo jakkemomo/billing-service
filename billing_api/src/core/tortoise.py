@@ -9,7 +9,7 @@ TORTOISE_CFG = {
     },
     "apps": {
         "billing": {
-            "models": ["src.orm.models", "aerich.models"],
+            "models": ["src.db.models", "aerich.models"],
         }
     },
     "use_tz": True,

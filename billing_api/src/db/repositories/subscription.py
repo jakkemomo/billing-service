@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Optional
 from uuid import uuid4
 
-from src.orm.models import Subscriptions, SubscriptionState
+from src.db.models import Subscriptions, SubscriptionState
 from tortoise import timezone
 
 

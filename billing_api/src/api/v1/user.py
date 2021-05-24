@@ -3,6 +3,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import parse_obj_as
 from src.clients import get_payment_gateway
+from src.db.models import PaymentMethods, Products
+from src.db.repositories.order import OrderRepository
+from src.db.repositories.payment_method import PaymentMethodRepository
+from src.db.repositories.product import ProductRepository
+from src.db.repositories.subscription import SubscriptionRepository
 from src.models.api import (
     PaymentInfoIn,
     PaymentInfoOut,
@@ -11,11 +16,6 @@ from src.models.api import (
     SubscriptionOut,
 )
 from src.models.common import OrderState
-from src.orm.models import PaymentMethods, Products
-from src.repositories.order import OrderRepository
-from src.repositories.payment_method import PaymentMethodRepository
-from src.repositories.product import ProductRepository
-from src.repositories.subscription import SubscriptionRepository
 from src.services.auth import AuthorizedUser, get_user
 from src.utils.refund import calculate_refund_amount
 from tortoise.transactions import in_transaction

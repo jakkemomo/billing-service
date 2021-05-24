@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from src.api.v1.service import service_router
 from src.api.v1.user import user_router
 from src.core.tortoise import TORTOISE_CFG
-from src.orm.utils import tortoise_init, tortoise_release
+from src.db.events import tortoise_init, tortoise_release
 
 app = FastAPI()
 app.include_router(service_router, prefix="/api")

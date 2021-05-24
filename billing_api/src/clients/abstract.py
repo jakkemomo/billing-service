@@ -1,7 +1,7 @@
 import abc
 
+from src.db.models import Orders
 from src.models.common import OrderState, Payment, PaymentMethod, Refund
-from src.orm.models import Orders
 
 
 class AbstractClientAdapter:

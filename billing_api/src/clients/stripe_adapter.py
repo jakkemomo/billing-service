@@ -1,6 +1,6 @@
 from src.core.settings import settings
+from src.db.models import Orders
 from src.models.common import OrderState, Payment, PaymentMethod, Refund
-from src.orm.models import Orders
 
 from .abstract import AbstractClientAdapter
 from .stripe.client import StripeClient
