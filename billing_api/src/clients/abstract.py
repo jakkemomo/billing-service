@@ -4,7 +4,7 @@ from src.models.common import OrderState, Payment, PaymentMethod, Refund
 from src.orm.models import Orders
 
 
-class AbstractAdapter:
+class AbstractClientAdapter:
     @abc.abstractmethod
     async def get_payment_status(self, order: Orders, **kwargs) -> OrderState:
         pass

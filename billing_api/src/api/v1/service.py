@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
+from src.clients import get_payment_gateway
 from src.models.common import OrderState, SubscriptionState
 from src.orm.models import Orders
 from src.repositories.order import OrderRepository
 from src.repositories.payment_method import PaymentMethodRepository
 from src.repositories.subscription import SubscriptionRepository
 from src.services.roles import RolesService, get_roles_service
-from src.utils.gateways import get_payment_gateway
 from tortoise.transactions import in_transaction
 
 service_router = APIRouter(prefix="/service")

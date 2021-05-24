@@ -2,6 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import parse_obj_as
+from src.clients import get_payment_gateway
 from src.models.api import (
     PaymentInfoIn,
     PaymentInfoOut,
@@ -16,7 +17,6 @@ from src.repositories.payment_method import PaymentMethodRepository
 from src.repositories.product import ProductRepository
 from src.repositories.subscription import SubscriptionRepository
 from src.utils.auth import AuthorizedUser, get_user
-from src.utils.gateways import get_payment_gateway
 from src.utils.refund import calculate_refund_amount
 from tortoise.transactions import in_transaction
 

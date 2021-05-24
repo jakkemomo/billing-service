@@ -8,12 +8,12 @@ from src.clients.stripe.utils import (
 from src.models.common import OrderState, Payment, PaymentMethod, Refund
 from src.orm.models import Orders
 
-from .abstract import AbstractAdapter
+from .abstract import AbstractClientAdapter
 
 API_KEY = "sk_test_51Imm7vKDxYta8liOnRXex80p2LNsuFbTimUwRI1x4I72EEuqw2xQjUyEpyd1yhnprGL8cYY1bYt6ZInMP0MBY2TG00F4HWdvIa"
 
 
-class StripeClientAdapter(AbstractAdapter):
+class StripeClientAdapter(AbstractClientAdapter):
     def __init__(self, client: StripeClient):
         self.client = client
 
@@ -95,6 +95,6 @@ class StripeClientAdapter(AbstractAdapter):
         )
 
 
-def get_stripe_adapter() -> AbstractAdapter:
+def get_stripe_adapter() -> AbstractClientAdapter:
     client = StripeClient(API_KEY)
     return StripeClientAdapter(client)
