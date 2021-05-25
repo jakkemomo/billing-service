@@ -1,0 +1,15 @@
+[
+  {
+    "model": "billing.product",
+    "pk": "283f179c-5cac-43fc-a246-8f6670a26b4d",
+    "fields": {
+      "name": "Basic subscription",
+      "description": "Subscription for accessing private movies",
+      "role_id": "2a5ce892-e6a4-439c-93b8-388c96d84f67",
+      "price": 5,
+      "currency_code": "usd",
+      "period": 31,
+      "active": true
+    }
+  }
+]

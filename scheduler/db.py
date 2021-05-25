@@ -64,7 +64,7 @@ class PostgresDB(AbstractStorage):
         """
         return self.get(
             """
-            SELECT id FROM subscriptions s WHERE s.state='pre_active' AND s.end_date=>current_date;
+            SELECT id FROM subscriptions s WHERE s.state='pre_active' AND s.end_date>current_date;
             """
         )
 

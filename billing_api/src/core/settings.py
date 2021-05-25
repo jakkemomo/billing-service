@@ -35,7 +35,7 @@ class BackoffSettings(BaseSettings):
 
 
 class AuthSettings(BaseSettings):
-    debug: int = Field(1, env="AUTH_DEBUG")
+    debug: int = Field(0, env="AUTH_DEBUG")
     debug_user_id: str = Field("debug-user-id", env="DEBUG_USER_ID")
     scheme: str = Field("http")
     host: str = Field("localhost", env="AUTH_HOST")

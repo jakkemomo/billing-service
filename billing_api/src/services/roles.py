@@ -6,8 +6,6 @@ from src.core.settings import settings
 
 logger = logging.getLogger(__name__)
 
-AUTH_ROLE_URL_PATTERN = "http://127.0.0.1:8001/api/v1/admin/user/%s/role/%s"
-
 
 class RolesService:
     def __init__(self, url_pattern: str):

@@ -18,5 +18,6 @@ python /usr/src/admin_panel/manage.py flush --no-input
 python /usr/src/admin_panel/manage.py migrate --fake billing 0001
 python /usr/src/admin_panel/manage.py migrate
 python /usr/src/admin_panel/manage.py collectstatic --no-input --clear
+python /usr/src/admin_panel/manage.py loaddata products.json
 
 exec "$@"

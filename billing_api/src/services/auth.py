@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import lru_cache
 from typing import Optional, Set
 
 import aiohttp
@@ -45,14 +44,13 @@ def _decode_token(token: str, public_key: str):
 
     try:
         now = datetime.utcnow().timestamp()
-        claims.validate_exp(now)
+        claims.validate_exp(now, leeway=10)
     except ExpiredTokenError:
         return None
 
     return claims
 
 
-@lru_cache()
 async def get_public_key(url: str) -> Optional[str]:
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:

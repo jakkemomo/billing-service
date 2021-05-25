@@ -51,6 +51,7 @@ services:
       - billing-admin-panel
       - billing_api
     volumes:
+      - ./billing_api/gui:/var/billing/static/
       - billing_nginx_logs:/var/log/nginx/
       - static_volume:/usr/src/admin_panel/config/static
     restart: always

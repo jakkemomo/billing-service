@@ -66,7 +66,7 @@ class StripeClient:
         method = "POST"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Idempotency-Key": uuid4(),
+            "Idempotency-Key": str(uuid4()),
         }
         url = f"{self.url}/{entity}s"
         return await self._request(method, url, data=kwargs, headers=headers)

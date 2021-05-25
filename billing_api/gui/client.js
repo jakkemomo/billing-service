@@ -5,7 +5,9 @@ var stripe = Stripe(
 
 // The items the customer wants to buy
 var purchase = {
-  id: "base-subscription",
+  "product_id": "283f179c-5cac-43fc-a246-8f6670a26b4d",
+  "email": "example@admin.com",
+  "payment_system": "stripe"
 };
 
 // Disable the button until we have Stripe set up on the page
