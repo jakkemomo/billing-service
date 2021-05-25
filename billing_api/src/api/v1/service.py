@@ -51,11 +51,31 @@ async def update_order_info(order_id: str):
                 data=user_payment_method.data,
             )
 
+            await SubscriptionRepository.pre_activate(order.subscription.id)
+
         await OrderRepository.update(
             order.id,
             state=order_status,
             payment_method=payment_method,
         )
+
+
+@service_router.post("/order/{order_id}/cancel")
+async def cancel_order(order_id: str):
+    """
+    Order is moving to the Error state by service application.
+    """
+    order = await OrderRepository.get(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if order.state == OrderState.PAID:
+        raise HTTPException(status_code=409, detail="Order is paid")
+
+    await OrderRepository.update(
+        order.id,
+        state=OrderState.ERROR,
+    )
 
 
 @service_router.post("/subscription/{subscription_id}/activate")

@@ -106,7 +106,7 @@ class Migration(migrations.Migration):
                     models.TextField(blank=True, null=True, verbose_name="описание"),
                 ),
                 ("role_id", models.UUIDField(verbose_name="роль")),
-                ("price", models.FloatField(verbose_name="цена")),
+                ("price", models.DecimalField(verbose_name="цена")),
                 ("period", models.IntegerField(verbose_name="период")),
                 ("active", models.BooleanField(default=False, verbose_name="активен")),
                 (
@@ -233,7 +233,7 @@ class Migration(migrations.Migration):
                         verbose_name="статус",
                     ),
                 ),
-                ("payment_amount", models.FloatField(verbose_name="цена")),
+                ("payment_amount", models.DecimalField(verbose_name="цена")),
                 (
                     "payment_currency_code",
                     models.CharField(max_length=3, verbose_name="код валюты"),

@@ -17,6 +17,10 @@ class AbstractStorage(ABC):
         pass
 
     @abstractmethod
+    def get_pre_active_subscriptions(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
     def get_overdue_subscriptions(self, *args, **kwargs):
         pass
 
@@ -51,6 +55,17 @@ class PostgresDB(AbstractStorage):
         (SELECT subscription_id FROM orders o WHERE (o.state='error' AND o.created>(current_date - INTERVAL '3 day')
         AND o.is_automatic=TRUE) GROUP BY subscription_id HAVING count(*)>=3))
         """
+        )
+
+    def get_pre_active_subscriptions(self):
+        """
+        Select pre active subscriptions for activation.
+        :return: List of Named Tuple Subscriptions
+        """
+        return self.get(
+            """
+            SELECT id FROM subscriptions s WHERE s.state='pre_active' AND s.end_date=>current_date;
+            """
         )
 
     def get_overdue_subscriptions(self):

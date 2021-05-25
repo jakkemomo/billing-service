@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  billing_test_db:
+    image: postgres
+    container_name: billing_test_db
+    env_file:
+      - .env.test
+    volumes:
+      - /home/billing_test_db/database:/data/db
+      - ../../../db/init.sql:/docker-entrypoint-initdb.d/init_schema.sql
+    restart: unless-stopped
+
+  tests:
+    container_name: tests
+    build: ../..
+    env_file:
+      - .env.test
+    entrypoint: >
+      sh -c "pip install -r /usr/src/billing_api/tests/functional/requirements.txt
+      && pytest /usr/src/billing_api/tests/functional/src"

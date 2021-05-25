@@ -51,6 +51,13 @@ class SubscriptionRepository:
         )
 
     @staticmethod
+    async def pre_activate(subscription_id: str):
+        await Subscriptions.filter(pk=subscription_id).update(
+            state=SubscriptionState.PRE_ACTIVE,
+            modified=timezone.now(),
+        )
+
+    @staticmethod
     async def cancel(subscription_id: str):
         await Subscriptions.filter(pk=subscription_id).update(
             state=SubscriptionState.CANCELLED,

@@ -50,6 +50,12 @@ class Scheduler:
             self.send_subscription_for_cancel(overdue_subscription.id)
             time.sleep(settings.REQUEST_DELAY)
 
+    def check_pre_active_subscriptions(self):
+        pre_active_subscriptions = self.db.get_pre_active_subscriptions()
+        for pre_active_subscription in pre_active_subscriptions:
+            self.send_order_for_activate(pre_active_subscription.id)
+            time.sleep(settings.REQUEST_DELAY)
+
     @staticmethod
     def send_subscription_for_update(subscription_id: str) -> None:
         """
@@ -62,11 +68,35 @@ class Scheduler:
                 f"Sending request to Billing API to update a subscription with id {subscription_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/subscription/update/{subscription_id}"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/subscription/{subscription_id}/recurring_payment"
             )
         except Exception as e:
             logger.error(
                 "Error while sending a request to update a subscription to Billing API: %s"
+                % e
+            )
+
+    @staticmethod
+    def send_order_for_activate(subscription_id: str) -> None:
+        """
+        Send request for activation of the subscription to the Blling API
+        :param subscription_id: UUID of subscription
+        :return: None
+        """
+        try:
+            logger.info(
+                f"Sending request to Billing API to activate a subscription with id {subscription_id}"
+            )
+            response = requests.post(
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/subscription/{subscription_id}/activate"
+            )
+            if response.status_code == 200:
+                logger.info(
+                    f"Subscription {subscription_id} was activated successfully!"
+                )
+        except Exception as e:
+            logger.error(
+                "Error while sending a request to activate a subscription to Billing API: %s"
                 % e
             )
 
@@ -82,7 +112,7 @@ class Scheduler:
                 f"Sending request to Billing API to cancel a subscription with id {subscription_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/subscription/cancel/{subscription_id}"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/subscription/{subscription_id}/deactivate"
             )
         except Exception as e:
             logger.error(
@@ -102,7 +132,7 @@ class Scheduler:
                 f"Sending request to Billing API to update an order with id {order_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/order/update/{order_id}"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/order/{order_id}/update_info"
             )
         except Exception as e:
             logger.error(
@@ -122,7 +152,7 @@ class Scheduler:
                 f"Sending request to Billing API to cancel an order with id {order_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/order/cancel/{order_id}"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/order/{order_id}/cancel"
             )
         except Exception as e:
             logger.error(
@@ -147,6 +177,7 @@ if __name__ == "__main__":
 
     schedule.every().day.at("10:30").do(scheduler.check_subscriptions)
     schedule.every(25).seconds.do(scheduler.check_orders)
+    schedule.every(15).seconds.do(scheduler.check_pre_active_subscriptions)
 
     logger.info("Billing scheduler is running")
 
