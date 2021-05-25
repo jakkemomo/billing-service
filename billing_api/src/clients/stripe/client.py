@@ -1,13 +1,11 @@
-from aiohttp import ClientSession
+import logging
+from uuid import uuid4
 
-from .exceptions import (
-    BadRequest,
-    RequestConflict,
-    RequestFailed,
-    ResourceNotFound,
-    StripeInternalError,
-    TooManyRequests,
-)
+import backoff
+from aiohttp import ClientConnectorError, ClientSession, ServerConnectionError
+from src.core.settings import settings
+
+from .exceptions import BadRequest, RequestFailed, TooManyRequests
 from .models import (
     HTTPResponse,
     StripeCustomerInner,
@@ -17,14 +15,27 @@ from .models import (
     StripeRefund,
     StripeRefundInner,
 )
+from .utils.exception_handlers import handle_response
+
+BACKOFF_FACTOR = settings.backoff.factor
+BACKOFF_BASE = settings.backoff.base
+BACKOFF_MAX_VALUE = settings.backoff.max_value
+
+logger = logging.getLogger(__name__)
 
 
 class StripeClient:
-    URL = "https://api.stripe.com/v1/"
-
-    def __init__(self, api_key: str):
+    def __init__(self, url: str, api_key: str):
+        self.url = url
         self.api_key = api_key
 
+    @backoff.on_exception(
+        backoff.expo,
+        (TooManyRequests, ClientConnectorError, ServerConnectionError),
+        base=BACKOFF_BASE,
+        factor=BACKOFF_FACTOR,
+        max_value=BACKOFF_MAX_VALUE,
+    )
     async def _request(
         self,
         method: str,
@@ -44,27 +55,20 @@ class StripeClient:
                     status=resp.status,
                     body=await resp.json(),
                 )
-
-                if http_response.status == 429:
-                    raise TooManyRequests()
-
-                if http_response.status == 409:
-                    raise RequestConflict()
-
-                if http_response.status in [500, 502, 503, 504]:
-                    raise StripeInternalError()
-
-                return http_response
+                return handle_response(http_response)
 
     async def _get(self, entity: str, entity_id: str) -> HTTPResponse:
         method = "GET"
-        url = "%s%ss/%s" % (self.URL, entity, entity_id)
+        url = f"{self.url}/{entity}s/{entity_id}"
         return await self._request(method, url)
 
     async def _create(self, entity: str, **kwargs) -> HTTPResponse:
         method = "POST"
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        url = "%s%ss" % (self.URL, entity)
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Idempotency-Key": uuid4(),
+        }
+        url = f"{self.url}/{entity}s"
         return await self._request(method, url, data=kwargs, headers=headers)
 
     async def create_customer(
@@ -75,30 +79,16 @@ class StripeClient:
             email=email,
         )
 
-        resp = await self._create("customer", **customer.dict())
-
-        if resp.status == 400:
-            if resp.body["error"]["code"] == "resource_already_exists":
-                return customer
-            raise BadRequest()
-
-        if resp.status == 402:
-            raise RequestFailed()
+        try:
+            await self._create("customer", **customer.dict())
+        except BadRequest as e:
+            if e.response.body["error"]["code"] != "resource_already_exists":
+                raise e
 
         return customer
 
     async def get_payment(self, payment_intent_id: str) -> StripePaymentIntent:
         resp = await self._get("payment_intent", payment_intent_id)
-
-        if resp.status == 400:
-            raise BadRequest()
-
-        if resp.status == 402:
-            raise RequestFailed()
-
-        if resp.status == 404:
-            raise ResourceNotFound()
-
         return StripePaymentIntent.parse_obj(resp.body)
 
     async def create_payment(
@@ -115,15 +105,7 @@ class StripeClient:
         )
 
         data = {**payment.dict(), **metadata}
-
         resp = await self._create("payment_intent", **data)
-
-        if resp.status == 400:
-            raise BadRequest()
-
-        if resp.status == 402:
-            raise RequestFailed()
-
         return StripePaymentIntent.parse_obj(resp.body)
 
     async def create_recurring_payment(
@@ -146,28 +128,17 @@ class StripeClient:
 
         data = {**payment.dict(), **metadata}
 
-        resp = await self._create("payment_intent", **data)
+        try:
+            resp = await self._create("payment_intent", **data)
+        except RequestFailed as e:
+            payment_data = e.response.body["error"]["payment_intent"]
+        else:
+            payment_data = resp.body
 
-        if resp.status == 400:
-            raise BadRequest()
-
-        if resp.status == 402:
-            resp.body = resp.body["error"]["payment_intent"]
-
-        return StripePaymentIntent.parse_obj(resp.body)
+        return StripePaymentIntent.parse_obj(payment_data)
 
     async def get_refund(self, refund_id: str) -> StripeRefund:
         resp = await self._get("refund", refund_id)
-
-        if resp.status == 400:
-            raise BadRequest()
-
-        if resp.status == 402:
-            raise RequestFailed()
-
-        if resp.status == 404:
-            raise ResourceNotFound()
-
         return StripeRefund.parse_obj(resp.body)
 
     async def create_refund(self, payment_intent_id: str, amount: int) -> StripeRefund:
@@ -177,11 +148,4 @@ class StripeClient:
         )
 
         resp = await self._create("refund", **refund.dict())
-
-        if resp.status == 400:
-            raise BadRequest()
-
-        if resp.status == 402:
-            raise RequestFailed()
-
         return StripeRefund.parse_obj(resp.body)

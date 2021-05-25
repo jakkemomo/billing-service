@@ -5,3 +5,4 @@ python-dotenv==0.17.0
 tortoise-orm[asyncpg]==0.17.2
 aiohttp==3.7.4.post0
 authlib==0.15.3
+backoff==1.10.0

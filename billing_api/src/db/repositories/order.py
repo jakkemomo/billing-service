@@ -2,7 +2,7 @@ from decimal import Decimal
 from typing import Optional
 from uuid import uuid4
 
-from src.orm.models import Orders, OrderState, PaymentMethods
+from src.db.models import Orders, OrderState, PaymentMethods
 from tortoise import timezone
 
 

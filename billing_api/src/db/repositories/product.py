@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from src.orm.models import Products
+from src.db.models import Products
 
 
 class ProductRepository:
