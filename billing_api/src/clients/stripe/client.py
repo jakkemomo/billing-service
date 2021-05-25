@@ -92,7 +92,7 @@ class StripeClient:
         return StripePaymentIntent.parse_obj(resp.body)
 
     async def create_payment(
-        self, customer_id: str, amount: int, currency: str
+        self, customer_id: str, amount: int, currency: str, email: str
     ) -> StripePaymentIntent:
         metadata = {
             "metadata[is_automatic]": 0,
@@ -102,6 +102,7 @@ class StripeClient:
             customer=customer_id,
             amount=amount,
             currency=currency,
+            receipt_email=email,
         )
 
         data = {**payment.dict(), **metadata}

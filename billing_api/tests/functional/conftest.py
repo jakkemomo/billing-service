@@ -2,11 +2,12 @@ from asyncio import get_event_loop_policy
 from os import environ as env
 
 import pytest
+from billing_api.src import main
+from billing_api.src.main import app, shutdown, startup
+from billing_api.src.services import auth
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
-from src.orm.models import Orders, PaymentMethods, Products, Subscriptions
-
-from billing_api.src.main import app, shutdown, startup
+from src.db.models import Orders, PaymentMethods, Products, Subscriptions
 
 load_dotenv()
 
@@ -33,7 +34,7 @@ TORTOISE_TEST_CFG = {
     },
     "apps": {
         "billing": {
-            "models": ["src.orm.models"],
+            "models": ["src.db.models"],
         }
     },
     "use_tz": True,
@@ -53,8 +54,8 @@ async def test_client(event_loop):
 
 
 async def mock_db_settings():
-    from billing_api.src import main
-
+    auth.debug_user_id = "d306f620-2083-4c55-b66f-7171fffecc2b"
+    auth.auth_debug = 1
     main.TORTOISE_CFG = TORTOISE_TEST_CFG
 
 

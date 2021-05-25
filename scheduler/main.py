@@ -176,8 +176,8 @@ if __name__ == "__main__":
     scheduler = Scheduler(pg_connection)
 
     schedule.every().day.at("10:30").do(scheduler.check_subscriptions)
-    schedule.every(25).seconds.do(scheduler.check_orders)
-    schedule.every(15).seconds.do(scheduler.check_pre_active_subscriptions)
+    schedule.every(3).seconds.do(scheduler.check_orders)
+    schedule.every(5).seconds.do(scheduler.check_pre_active_subscriptions)
 
     logger.info("Billing scheduler is running")
 

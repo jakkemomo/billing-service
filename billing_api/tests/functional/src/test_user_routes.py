@@ -1,8 +1,11 @@
 import pytest
 from src.clients.stripe.client import StripeClient
-from src.clients.stripe_adapter import API_KEY
-from src.orm.models import Orders
-from src.utils.auth import DEBUG_USER_ID
+from src.core.settings import settings
+from src.db.models import Orders
+
+stripe_url = settings.stripe.url
+API_KEY = settings.stripe.api_key
+DEBUG_USER_ID = settings.auth.debug_user_id
 
 
 @pytest.mark.asyncio
@@ -15,7 +18,7 @@ class TestUser:
         response = test_client.post(
             "api/user/payment",
             json={
-                "email": "deadpool@example.com",
+                "email": "spat123@mail.ru",
                 "product_id": str(pytest.product_id),
                 "payment_system": "stripe",
             },
@@ -29,7 +32,7 @@ class TestUser:
         """
         This functionality is made from User to Stripe directly. Imitate a user inserting a payment method.
         """
-        stripe = StripeClient(API_KEY)
+        stripe = StripeClient(api_key=API_KEY, url=stripe_url)
         data = {
             "type": "card",
             "card[number]": "4242424242424242",
@@ -42,7 +45,7 @@ class TestUser:
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         response = await stripe._request(
             "post",
-            stripe.URL + f"payment_methods/{pytest.payment_method_id}/attach",
+            stripe.url + f"/payment_methods/{pytest.payment_method_id}/attach",
             data={"customer": DEBUG_USER_ID},
             headers=headers,
         )
@@ -52,13 +55,13 @@ class TestUser:
     # проверить, что создался ордер, подписка и что ордер обновился с external_id
     async def test_customer_payment_validation(self):
         """ This functionality is made from User to Stripe directly. Imitate confirming a payment intent"""
-        stripe = StripeClient(API_KEY)
+        stripe = StripeClient(api_key=API_KEY, url=stripe_url)
         order = await Orders.filter(user_id=DEBUG_USER_ID).first()
         pytest.main_order = order.id
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         response = await stripe._request(
             method="post",
-            url=stripe.URL + f"payment_intents/{order.external_id}/confirm",
+            url=stripe.url + f"/payment_intents/{order.external_id}/confirm",
             data={"payment_method": pytest.payment_method_id},
             headers=headers,
         )

@@ -35,6 +35,7 @@ class StripePaymentIntentInner(BaseModel):
     customer: str
     amount: int
     currency: str
+    receipt_email: str
     setup_future_usage: str = "off_session"
 
 

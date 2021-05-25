@@ -38,10 +38,10 @@ class AuthSettings(BaseSettings):
     debug: int = Field(0, env="AUTH_DEBUG")
     debug_user_id: str = Field("debug-user-id", env="DEBUG_USER_ID")
     scheme: str = Field("http")
-    host: str = Field("localhost", env="AUTH_HOST")
-    port: int = Field(8000, env="AUTH_PORT")
-    pubkey_path: str = Field("api/v1/pubkey", env="AUTH_PUBKEY_PATH")
-    roles_path_pattern: str = Field("admin/user/%s/role/%s", env="ROLES_PATH_PATTERN")
+    host: str = Field("0.0.0.0", env="AUTH_HOST")
+    port: int = Field(8001, env="AUTH_PORT")
+    pubkey_path: str = Field("api/v1/auth/pubkey", env="AUTH_PUBKEY_PATH")
+    roles_path_pattern: str = Field("api/v1/admin/user/%s/role/%s", env="ROLES_PATH_PATTERN")
 
     def get_pubkey_url(self):
         return f"{self.scheme}://{self.host}:{self.port}/{self.pubkey_path}"

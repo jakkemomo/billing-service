@@ -30,6 +30,7 @@ class StripeClientAdapter(AbstractClientAdapter):
             customer.id,
             convert_to_int(order.payment_amount),
             order.payment_currency_code,
+            order.user_email,
         )
         return Payment(
             id=stripe_payment.id,
