@@ -1,15 +1,23 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from src.clients import get_payment_gateway
-from src.core.settings import logger
 from src.db.models import Orders
 from src.db.repositories.order import OrderRepository
 from src.db.repositories.payment_method import PaymentMethodRepository
 from src.db.repositories.subscription import SubscriptionRepository
 from src.models.common import OrderState, SubscriptionState
-from src.services.roles import RolesService, get_roles_service
+from src.services.roles import (
+    RoleServiceConflictError,
+    RoleServiceNotFoundError,
+    RolesService,
+    get_roles_service,
+)
 from tortoise.transactions import in_transaction
 
 service_router = APIRouter(prefix="/service")
+
+logger = logging.getLogger(__name__)
 
 
 @service_router.post("/order/{order_id}/update_info", status_code=200)
@@ -118,12 +126,27 @@ async def activate_subscription(
             SubscriptionState.PRE_ACTIVE,
         ]:
             logger.info(f"Granting role for user with subscription {subscription.id}.")
-            is_granted: bool = await roles_service.grant_role(
-                subscription.user_id, subscription.product.role_id
-            )
-            if not is_granted:
-                return HTTPException(
-                    status_code=503, detail="Auth service is not available"
+            try:
+                await roles_service.grant_role(
+                    subscription.user_id, subscription.product.role_id
+                )
+            except RoleServiceConflictError as e:
+                logger.info(
+                    f"User {subscription.user_id} already has the role {subscription.product.role_id}."
+                    f"Auth service response: {e.msg}"
+                )
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"User {subscription.user_id} already has the role {subscription.product.role_id}",
+                )
+            except RoleServiceNotFoundError as e:
+                logger.error(
+                    f"User {subscription.user_id} or role {subscription.product.role_id} not found"
+                    f"Auth service response: {e.msg}"
+                )
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"User {subscription.user_id} or role {subscription.product.role_id} not found",
                 )
 
         logger.info(f"Subscription {subscription_id} was activated successfully")
@@ -186,11 +209,17 @@ async def deactivate_subscription(
     logger.info(f"Deactivating subscription {subscription.id}.")
     async with in_transaction():
         await SubscriptionRepository.deactivate(subscription_id)
-        is_revoked: bool = await roles_service.revoke_role(
-            subscription.user_id, subscription.product.role_id
-        )
-        if not is_revoked:
-            return HTTPException(
-                status_code=503, detail="Auth service is not available"
+        try:
+            await roles_service.revoke_role(
+                subscription.user_id, subscription.product.role_id
+            )
+        except RoleServiceNotFoundError as e:
+            logger.error(
+                f"User {subscription.user_id} or role {subscription.product.role_id} not found"
+                f"Auth service response: {e.msg}"
+            )
+            raise HTTPException(
+                status_code=404,
+                detail=f"User {subscription.user_id} or role {subscription.product.role_id} not found",
             )
         logger.info(f"Subscription {subscription_id} was deactivated successfully")
