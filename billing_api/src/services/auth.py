@@ -6,7 +6,7 @@ from authlib.jose import jwt
 from authlib.jose.errors import BadSignatureError, ExpiredTokenError, JoseError
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src.core.settings import settings
+from src.core.settings import settings, logger
 
 http_bearer = HTTPBearer(auto_error=False)
 auth_debug = settings.auth.debug
@@ -47,8 +47,9 @@ def _decode_token(token: str, public_key: str):
 
     try:
         now = datetime.utcnow().timestamp()
-        claims.validate_exp(now, leeway=10)
+        claims.validate_exp(now, leeway=0)
     except ExpiredTokenError:
+        logger.debug("Token Expired!")
         return None
 
     return claims

@@ -68,7 +68,7 @@ class Scheduler:
                 f"Sending request to Billing API to update a subscription with id {subscription_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/subscription/{subscription_id}/recurring_payment"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/subscription/{subscription_id}/recurring_payment"
             )
         except Exception as e:
             logger.error(
@@ -88,7 +88,7 @@ class Scheduler:
                 f"Sending request to Billing API to activate a subscription with id {subscription_id}"
             )
             response = requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/subscription/{subscription_id}/activate"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/subscription/{subscription_id}/activate"
             )
             if response.status_code == 200:
                 logger.info(
@@ -112,7 +112,7 @@ class Scheduler:
                 f"Sending request to Billing API to cancel a subscription with id {subscription_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/subscription/{subscription_id}/deactivate"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/subscription/{subscription_id}/deactivate"
             )
         except Exception as e:
             logger.error(
@@ -132,7 +132,7 @@ class Scheduler:
                 f"Sending request to Billing API to update an order with id {order_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/order/{order_id}/update_info"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/order/{order_id}/update_info"
             )
         except Exception as e:
             logger.error(
@@ -152,7 +152,7 @@ class Scheduler:
                 f"Sending request to Billing API to cancel an order with id {order_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/v1/service/order/{order_id}/cancel"
+                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/order/{order_id}/cancel"
             )
         except Exception as e:
             logger.error(
@@ -176,7 +176,7 @@ if __name__ == "__main__":
     scheduler = Scheduler(pg_connection)
 
     schedule.every().day.at("10:30").do(scheduler.check_subscriptions)
-    schedule.every(3).seconds.do(scheduler.check_orders)
+    schedule.every(5).seconds.do(scheduler.check_orders)
     schedule.every(5).seconds.do(scheduler.check_pre_active_subscriptions)
 
     logger.info("Billing scheduler is running")

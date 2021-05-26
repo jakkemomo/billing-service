@@ -21,8 +21,6 @@ BACKOFF_FACTOR = settings.backoff.factor
 BACKOFF_BASE = settings.backoff.base
 BACKOFF_MAX_VALUE = settings.backoff.max_value
 
-logger = logging.getLogger(__name__)
-
 
 class StripeClient:
     def __init__(self, url: str, api_key: str):

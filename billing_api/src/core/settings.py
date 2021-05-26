@@ -9,6 +9,7 @@ from .logging import LOGGING_CFG
 BASE_DIR = pathlib.Path(__file__).parent.parent
 DEFAULT_CONFIG_PATH = BASE_DIR / "config.json"
 
+logger = logging.getLogger(__name__)
 logging.config.dictConfig(LOGGING_CFG)
 
 load_dotenv()

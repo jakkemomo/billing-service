@@ -11,7 +11,7 @@ from tortoise.transactions import in_transaction
 service_router = APIRouter(prefix="/service")
 
 
-@service_router.post("/order/{order_id}/update_info")
+@service_router.post("/order/{order_id}/update_info", status_code=200)
 async def update_order_info(order_id: str):
     """
     Order information updating by service applications.
@@ -60,7 +60,7 @@ async def update_order_info(order_id: str):
         )
 
 
-@service_router.post("/order/{order_id}/cancel")
+@service_router.post("/order/{order_id}/cancel", status_code=200)
 async def cancel_order(order_id: str):
     """
     Order is moving to the Error state by service application.
@@ -78,7 +78,7 @@ async def cancel_order(order_id: str):
     )
 
 
-@service_router.post("/subscription/{subscription_id}/activate")
+@service_router.post("/subscription/{subscription_id}/activate", status_code=200)
 async def activate_subscription(
     subscription_id: str,
     roles_service: RolesService = Depends(get_roles_service),
@@ -91,13 +91,13 @@ async def activate_subscription(
         await SubscriptionRepository.activate(
             subscription.id, subscription.product.period
         )
-        if subscription.state == SubscriptionState.INACTIVE:
+        if subscription.state in [SubscriptionState.INACTIVE, SubscriptionState.PRE_ACTIVE]:
             await roles_service.grant_role(
                 subscription.user_id, subscription.product.role_id
             )
 
 
-@service_router.post("/subscription/{subscription_id}/recurring_payment")
+@service_router.post("/subscription/{subscription_id}/recurring_payment", status_code=200)
 async def withdraw_subscription_price(subscription_id: str):
     """Recurring payment for subscription created by service applications"""
 
@@ -129,7 +129,7 @@ async def withdraw_subscription_price(subscription_id: str):
         )
 
 
-@service_router.post("/subscription/{subscription_id}/deactivate")
+@service_router.post("/subscription/{subscription_id}/deactivate", status_code=200)
 async def deactivate_subscription(
     subscription_id: str,
     roles_service: RolesService = Depends(get_roles_service),

@@ -88,7 +88,7 @@ async def get_draft_order(
 
     unpaid_order = await OrderRepository.get_unpaid_order(user.id)
     if not unpaid_order:
-        raise HTTPException(status_code=404, detail="User hasn't an unpaid order")
+        raise HTTPException(status_code=404, detail="User has no unpaid orders")
 
     payment_gateway = get_payment_gateway(unpaid_order.payment_system)
     payment = await payment_gateway.get_payment(unpaid_order)
@@ -152,7 +152,7 @@ async def cancel_subscription(
     subscription = await SubscriptionRepository.get_user_subscription(user.id)
     if subscription:
         raise HTTPException(
-            status_code=404, detail="User hasn't an active subscription"
+            status_code=404, detail="User has no active subscriptions"
         )
 
     await SubscriptionRepository.cancel(subscription.id)

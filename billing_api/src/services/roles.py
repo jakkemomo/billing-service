@@ -13,6 +13,7 @@ class RolesService:
 
     async def grant_role(self, user_id: str, role_id: str) -> None:
         url = self.url_pattern % (user_id, role_id)
+        logger.info(f"Sending request to update user roles to AUTH API. User {user_id} Role {role_id}")
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(url) as resp:

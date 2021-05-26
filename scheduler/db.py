@@ -36,12 +36,12 @@ class AbstractStorage(ABC):
 class PostgresDB(AbstractStorage):
     def __init__(self, connection):
         super(PostgresDB, self).__init__(connection)
-        self.cr = self.connection.cursor(cursor_factory=NamedTupleCursor)
 
     def get(self, query: str) -> List:
-        self.cr.execute(query)
-        results = self.cr.fetchall()
-        return results
+        with self.connection.cursor(cursor_factory=NamedTupleCursor) as cr:
+            cr.execute(query)
+            results = cr.fetchall()
+            return results
 
     def get_active_subscriptions(self) -> List:
         """
@@ -64,7 +64,7 @@ class PostgresDB(AbstractStorage):
         """
         return self.get(
             """
-            SELECT id FROM subscriptions s WHERE s.state='pre_active' AND s.end_date>current_date;
+            SELECT id FROM subscriptions s WHERE s.state='pre_active';
             """
         )
 
@@ -86,10 +86,10 @@ class PostgresDB(AbstractStorage):
 
     def get_processing_orders(self) -> List:
         return self.get(
-            "SELECT id FROM orders WHERE state='processing' AND created<now()-INTERVAL '15 seconds'"
+            "SELECT id FROM orders WHERE state='processing' or state='draft';"
         )
 
     def get_overdue_orders(self) -> List:
         return self.get(
-            "SELECT id FROM orders WHERE state='processing' AND modified<now()-INTERVAL '10 days'"
+            "SELECT id FROM orders WHERE state='draft' AND modified<now()-INTERVAL '10 days';"
         )
