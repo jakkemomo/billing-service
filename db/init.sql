@@ -21,7 +21,7 @@ create table if not exists data.products (
                active boolean default FALSE not null,
                created timestamptz default now(),
                modified timestamptz default now());
-create type data.subscription_state as enum ('active', 'pre_active', 'inactive', 'cancelled');
+create type data.subscription_state as enum ('active', 'pre_active', 'inactive', 'cancelled', 'to_deactivate');
 create table if not exists data.subscriptions (
                id uuid primary key,
                product_id uuid references data.products on update cascade on delete restrict ,

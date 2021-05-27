@@ -21,6 +21,10 @@ class AbstractStorage(ABC):
         pass
 
     @abstractmethod
+    def get_pre_deactivate_subscriptions(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
     def get_overdue_subscriptions(self, *args, **kwargs):
         pass
 
@@ -65,6 +69,17 @@ class PostgresDB(AbstractStorage):
         return self.get(
             """
             SELECT id FROM subscriptions s WHERE s.state='pre_active';
+            """
+        )
+
+    def get_pre_deactivate_subscriptions(self):
+        """
+        Select pre active subscriptions for activation.
+        :return: List of Named Tuple Subscriptions
+        """
+        return self.get(
+            """
+            SELECT id FROM subscriptions s WHERE s.state='to_deactivate';
             """
         )
 

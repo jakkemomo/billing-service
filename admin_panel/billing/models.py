@@ -1,3 +1,5 @@
+from json import JSONEncoder, JSONDecoder
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -26,10 +28,11 @@ class SubscriptionState(models.TextChoices):
     Модель статусов подписок.
     """
 
-    active = "active", _("Подключена")
+    active = "active", _("Активна")
     pre_active = "pre_active", _("Оплачена")
-    inactive = "inactive", _("Отключена")
-    cancelled = "cancelled", _("Отменена")
+    to_deactivate = "to_deactivate", _("Готовится к отключению")
+    inactive = "inactive", _("Неактивна")
+    cancelled = "cancelled", _("Отменена пользователем")
 
 
 class Product(TimeStampedModel, UUIDModel):
@@ -104,7 +107,10 @@ class PaymentMethod(TimeStampedModel, UUIDModel):
     is_default = models.BooleanField(
         verbose_name=_("по умолчанию"), default=False, **NULL_BLANK_FALSE
     )
-    data = models.JSONField("информация для фронта", default="{}", **NULL_BLANK_FALSE)
+    data = models.JSONField("информация для фронта", default="{}", **NULL_BLANK,
+                            decoder=JSONDecoder,
+                            encoder=JSONEncoder
+                            )
 
     class Meta:
         verbose_name = _("метод оплаты")

@@ -24,3 +24,4 @@ To start the project you need to configure .env.prod files in next directories:
     DB_PORT=5432
 
 docker-compose up -d
+docker exec -it billing-admin-panel python manage.py createsuperuser

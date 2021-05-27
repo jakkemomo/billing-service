@@ -56,6 +56,12 @@ class Scheduler:
             self.send_order_for_activate(pre_active_subscription.id)
             time.sleep(settings.REQUEST_DELAY)
 
+    def check_pre_deactivate_subscriptions(self):
+        pre_deactivate_subscriptions = self.db.get_pre_deactivate_subscriptions()
+        for subscription in pre_deactivate_subscriptions:
+            self.send_subscription_for_cancel(subscription.id)
+            time.sleep(settings.REQUEST_DELAY)
+
     @staticmethod
     def send_subscription_for_update(subscription_id: str) -> None:
         """
@@ -87,13 +93,10 @@ class Scheduler:
             logger.info(
                 f"Sending request to Billing API to activate a subscription with id {subscription_id}"
             )
-            response = requests.post(
+            requests.post(
                 f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/subscription/{subscription_id}/activate"
             )
-            if response.status_code == 200:
-                logger.info(
-                    f"Subscription {subscription_id} was activated successfully!"
-                )
+
         except Exception as e:
             logger.error(
                 "Error while sending a request to activate a subscription to Billing API: %s"
@@ -177,7 +180,8 @@ if __name__ == "__main__":
 
     schedule.every().day.at("10:30").do(scheduler.check_subscriptions)
     schedule.every(5).seconds.do(scheduler.check_orders)
-    schedule.every(5).seconds.do(scheduler.check_pre_active_subscriptions)
+    schedule.every(6).seconds.do(scheduler.check_pre_active_subscriptions)
+    schedule.every(7).seconds.do(scheduler.check_pre_deactivate_subscriptions)
 
     logger.info("Billing scheduler is running")
 
