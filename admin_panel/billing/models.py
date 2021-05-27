@@ -1,4 +1,4 @@
-from json import JSONEncoder, JSONDecoder
+from json import JSONDecoder, JSONEncoder
 
 from django.conf import settings
 from django.db import models
@@ -43,7 +43,9 @@ class Product(TimeStampedModel, UUIDModel):
     name = models.CharField(_("название"), max_length=50, **NULL_BLANK_FALSE)
     description = models.TextField(_("описание"), **NULL_BLANK)
     role_id = models.UUIDField(verbose_name=_("роль"), **NULL_BLANK_FALSE)
-    price = models.DecimalField(verbose_name=_("цена"), max_digits=10, decimal_places=2, **NULL_BLANK_FALSE)
+    price = models.DecimalField(
+        verbose_name=_("цена"), max_digits=10, decimal_places=2, **NULL_BLANK_FALSE
+    )
     period = models.IntegerField(verbose_name=_("период"), **NULL_BLANK_FALSE)
     active = models.BooleanField(
         verbose_name=_("активен"), default=False, **NULL_BLANK_FALSE
@@ -107,10 +109,13 @@ class PaymentMethod(TimeStampedModel, UUIDModel):
     is_default = models.BooleanField(
         verbose_name=_("по умолчанию"), default=False, **NULL_BLANK_FALSE
     )
-    data = models.JSONField("информация для фронта", default="{}", **NULL_BLANK,
-                            decoder=JSONDecoder,
-                            encoder=JSONEncoder
-                            )
+    data = models.JSONField(
+        "информация для фронта",
+        default="{}",
+        **NULL_BLANK,
+        decoder=JSONDecoder,
+        encoder=JSONEncoder,
+    )
 
     class Meta:
         verbose_name = _("метод оплаты")
@@ -166,7 +171,9 @@ class Order(TimeStampedModel, UUIDModel):
         default=OrderState.draft,
         **NULL_BLANK_FALSE,
     )
-    payment_amount = models.DecimalField(verbose_name=_("цена"), max_digits=10, decimal_places=2, **NULL_BLANK_FALSE)
+    payment_amount = models.DecimalField(
+        verbose_name=_("цена"), max_digits=10, decimal_places=2, **NULL_BLANK_FALSE
+    )
     payment_currency_code = models.CharField(
         _("код валюты"), max_length=3, **NULL_BLANK_FALSE
     )

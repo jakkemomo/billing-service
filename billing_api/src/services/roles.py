@@ -12,7 +12,9 @@ class RolesService:
 
     async def grant_role(self, user_id: str, role_id: str) -> bool:
         url = self.url_pattern % (user_id, role_id)
-        logger.info(f"Sending request to update user roles to AUTH API. User {user_id} Role {role_id}")
+        logger.info(
+            f"Sending request to update user roles to AUTH API. User {user_id} Role {role_id}"
+        )
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(url) as resp:
@@ -26,7 +28,9 @@ class RolesService:
                         )
                     return False
         except Exception as e:
-            logger.error(f"Error while granting role through Auth API by url {url}: {e}")
+            logger.error(
+                f"Error while granting role through Auth API by url {url}: {e}"
+            )
             return False
 
     async def revoke_role(self, user_id: str, role_id: str) -> bool:
@@ -39,7 +43,9 @@ class RolesService:
                         return True
                     return False
         except Exception as e:
-            logger.error(f"Error while revoking role through Auth API by url {url}: {e}")
+            logger.error(
+                f"Error while revoking role through Auth API by url {url}: {e}"
+            )
             return False
 
 

@@ -2,12 +2,13 @@ from asyncio import get_event_loop_policy
 from os import environ as env
 
 import pytest
-from billing_api.src import main
-from billing_api.src.main import app, shutdown, startup
-from billing_api.src.services import auth
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from src.db.models import Orders, PaymentMethods, Products, Subscriptions
+
+from billing_api.src import main
+from billing_api.src.main import app, shutdown, startup
+from billing_api.src.services import auth
 
 load_dotenv()
 
@@ -43,7 +44,7 @@ TORTOISE_TEST_CFG = {
 
 
 @pytest.fixture(scope="session", autouse=True)
-async def test_client(event_loop):
+async def test_client():
     await mock_db_settings()
     client = TestClient(app)
     await startup()
@@ -63,10 +64,10 @@ async def setup_db():
     product = await Products.create(
         name="Basic Subscription",
         description="Sample",
-        role_id="48c400a4-1654-45e3-a039-5b7afc709128",
+        role_id="2a5ce892-e6a4-439c-93b8-388c96d84f67",
         price=10.0,
         currency_code="usd",
-        period=30,
+        period=31,
         active=True,
     )
     pytest.product_id = product.id
@@ -79,7 +80,7 @@ async def clear_db():
     await PaymentMethods.all().delete()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def event_loop():
     """Create an instance of the default event loop for each test case."""
     loop = get_event_loop_policy().new_event_loop()

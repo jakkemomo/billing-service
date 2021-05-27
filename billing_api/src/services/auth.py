@@ -6,7 +6,7 @@ from authlib.jose import jwt
 from authlib.jose.errors import BadSignatureError, ExpiredTokenError, JoseError
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src.core.settings import settings, logger
+from src.core.settings import logger, settings
 
 http_bearer = HTTPBearer(auto_error=False)
 auth_debug = settings.auth.debug
@@ -67,7 +67,7 @@ async def get_public_key(url: str) -> Optional[str]:
 
 
 async def get_user(
-        token: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
+    token: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
 ) -> Optional[AuthorizedUser]:
     if auth_debug:
         debug_claims = {

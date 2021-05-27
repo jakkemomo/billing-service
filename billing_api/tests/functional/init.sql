@@ -15,13 +15,13 @@ create table if not exists data.products (
                name varchar(255) not null,
                description text,
                role_id uuid not null,
-               price float not null,
+               price decimal not null,
                currency_code varchar(3) not null,
                period integer not null,
                active boolean default FALSE not null,
                created timestamptz default now(),
                modified timestamptz default now());
-create type data.subscription_state as enum ('active', 'inactive', 'cancelled');
+create type data.subscription_state as enum ('active', 'pre_active', 'inactive', 'cancelled', 'to_deactivate');
 create table if not exists data.subscriptions (
                id uuid primary key,
                product_id uuid references data.products on update cascade on delete restrict ,
@@ -40,7 +40,7 @@ create table if not exists data.orders (
               user_id uuid not null,
               payment_system varchar(50) not null,
               payment_method_id uuid references data.payment_methods on update cascade on delete restrict,
-              payment_amount float not null,
+              payment_amount decimal not null,
               payment_currency_code varchar(3) not null,
               user_email varchar(35) not null,
               state data.order_state default 'draft',

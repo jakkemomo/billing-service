@@ -53,7 +53,9 @@ async def update_order_info(order_id: str):
                 payment_system=order.payment_system,
                 data=user_payment_method.data,
             )
-            logger.info(f"Payment method {payment_method.id} for order {order.id} / user {order.user_id} created successfully.")
+            logger.info(
+                f"Payment method {payment_method.id} for order {order.id} / user {order.user_id} created successfully."
+            )
 
             await SubscriptionRepository.pre_activate(order.subscription.id)
 
@@ -65,7 +67,8 @@ async def update_order_info(order_id: str):
                 payment_method=payment_method,
             )
             logger.info(
-                f"Order {order.id} updated successfully with state {order_status.value} and payment method {payment_method.id}.")
+                f"Order {order.id} updated successfully with state {order_status.value} and payment method {payment_method.id}."
+            )
 
         else:
             await OrderRepository.update(
@@ -73,7 +76,8 @@ async def update_order_info(order_id: str):
                 state=order_status,
             )
             logger.info(
-                f"Order {order.id} updated successfully with state {order_status.value}.")
+                f"Order {order.id} updated successfully with state {order_status.value}."
+            )
 
 
 @service_router.post("/order/{order_id}/cancel", status_code=200)
@@ -110,18 +114,25 @@ async def activate_subscription(
         await SubscriptionRepository.activate(
             subscription.id, subscription.product.period
         )
-        if subscription.state in [SubscriptionState.INACTIVE, SubscriptionState.PRE_ACTIVE]:
+        if subscription.state in [
+            SubscriptionState.INACTIVE,
+            SubscriptionState.PRE_ACTIVE,
+        ]:
             logger.info(f"Granting role for user with subscription {subscription.id}.")
             is_granted: bool = await roles_service.grant_role(
                 subscription.user_id, subscription.product.role_id
             )
             if not is_granted:
-                return HTTPException(status_code=503, detail="Auth service is not available")
+                return HTTPException(
+                    status_code=503, detail="Auth service is not available"
+                )
 
         logger.info(f"Subscription {subscription_id} was activated successfully")
 
 
-@service_router.post("/subscription/{subscription_id}/recurring_payment", status_code=200)
+@service_router.post(
+    "/subscription/{subscription_id}/recurring_payment", status_code=200
+)
 async def withdraw_subscription_price(subscription_id: str):
     """Recurring payment for subscription created by service applications"""
 
@@ -139,7 +150,9 @@ async def withdraw_subscription_price(subscription_id: str):
     previous_order: Orders = await OrderRepository.get_subscription_order(
         subscription.user_id, subscription_id
     )
-    logger.info(f"Making a recurring payment for subscription {subscription.id} with payment method {payment_method.id}")
+    logger.info(
+        f"Making a recurring payment for subscription {subscription.id} with payment method {payment_method.id}"
+    )
     async with in_transaction():
         order = await OrderRepository.create_recurring_order(
             previous_order, payment_method
@@ -151,7 +164,9 @@ async def withdraw_subscription_price(subscription_id: str):
         await OrderRepository.update(
             order.id, external_id=payment.id, state=payment.state
         )
-        logger.info(f"Recurring payment for subscription {subscription.id} created successfully: Payment {payment.id} / Order {order.id}")
+        logger.info(
+            f"Recurring payment for subscription {subscription.id} created successfully: Payment {payment.id} / Order {order.id}"
+        )
 
 
 @service_router.post("/subscription/{subscription_id}/deactivate", status_code=200)
@@ -174,6 +189,7 @@ async def deactivate_subscription(
             subscription.user_id, subscription.product.role_id
         )
         if not is_revoked:
-            return HTTPException(status_code=503, detail="Auth service is not available")
+            return HTTPException(
+                status_code=503, detail="Auth service is not available"
+            )
         logger.info(f"Subscription {subscription_id} was deactivated successfully")
-
