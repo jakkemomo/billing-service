@@ -1,16 +1,16 @@
 import logging
 import pathlib
+from logging.config import dictConfig
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings, Field
-
-from .logging import LOGGING_CFG
+from src.core.logging import LOGGING_CFG
 
 BASE_DIR = pathlib.Path(__file__).parent.parent
 DEFAULT_CONFIG_PATH = BASE_DIR / "config.json"
 
 logger = logging.getLogger(__name__)
-logging.config.dictConfig(LOGGING_CFG)
+dictConfig(LOGGING_CFG)
 
 load_dotenv()
 

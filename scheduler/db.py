@@ -9,7 +9,7 @@ class AbstractStorage(ABC):
         self.connection = connection
 
     @abstractmethod
-    def get(self, *args, **kwargs) -> List:
+    def get(self, query: str, *args, **kwargs) -> List:
         pass
 
     @abstractmethod
@@ -41,13 +41,13 @@ class PostgresDB(AbstractStorage):
     def __init__(self, connection):
         super(PostgresDB, self).__init__(connection)
 
-    def get(self, query: str) -> List:
+    def get(self, query: str, *args, **kwargs) -> List:
         with self.connection.cursor(cursor_factory=NamedTupleCursor) as cr:
             cr.execute(query)
             results = cr.fetchall()
             return results
 
-    def get_active_subscriptions(self) -> List:
+    def get_active_subscriptions(self, *args, **kwargs) -> List:
         """
         Filter subscription by state=Active and end_date<Current Date, also check if there were 3 or more failed
         automatic payments for this subscription and if there are 3 of them - dont select this subscription.
@@ -61,7 +61,7 @@ class PostgresDB(AbstractStorage):
         """
         )
 
-    def get_pre_active_subscriptions(self) -> List:
+    def get_pre_active_subscriptions(self, *args, **kwargs) -> List:
         """
         Select pre active subscriptions for activation.
         :return: List of Named Tuple Subscriptions
@@ -72,7 +72,7 @@ class PostgresDB(AbstractStorage):
             """
         )
 
-    def get_pre_deactivate_subscriptions(self) -> List:
+    def get_pre_deactivate_subscriptions(self, *args, **kwargs) -> List:
         """
         Select pre active subscriptions for activation.
         :return: List of Named Tuple Subscriptions
@@ -83,7 +83,7 @@ class PostgresDB(AbstractStorage):
             """
         )
 
-    def get_overdue_subscriptions(self) -> List:
+    def get_overdue_subscriptions(self, *args, **kwargs) -> List:
         """
         Filter subscription by state=Active and end_date<Current Date, also check if there were 3 or more failed
         automatic payments for this subscription and if there are 3 of them - select this subscriptions. Also check
@@ -99,12 +99,12 @@ class PostgresDB(AbstractStorage):
         """
         )
 
-    def get_processing_orders(self) -> List:
+    def get_processing_orders(self, *args, **kwargs) -> List:
         return self.get(
             "SELECT id FROM orders WHERE state='processing' or state='draft';"
         )
 
-    def get_overdue_orders(self) -> List:
+    def get_overdue_orders(self, *args, **kwargs) -> List:
         return self.get(
             "SELECT id FROM orders WHERE state='draft' AND modified<now()-INTERVAL '10 days';"
         )

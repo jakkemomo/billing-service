@@ -55,7 +55,7 @@ def _decode_token(token: str, public_key: str):
     return claims
 
 
-async def get_public_key(url: str) -> Optional[str]:
+async def get_public_key(url: str) -> str:
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
@@ -63,7 +63,7 @@ async def get_public_key(url: str) -> Optional[str]:
                     logger.error("Error while getting public key from auth service!")
                     return ""
                 body = await resp.json()
-                return body["public_key"]
+                return body.get("public_key", "")
     except Exception as e:
         logger.error(f"Error while getting public key from auth service: {e}")
         return ""
