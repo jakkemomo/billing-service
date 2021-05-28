@@ -8,7 +8,6 @@ from src.db.models import Orders, PaymentMethods, Products, Subscriptions
 
 from billing_api.src import main
 from billing_api.src.main import app, shutdown, startup
-from billing_api.src.services import auth
 
 load_dotenv()
 
@@ -55,8 +54,6 @@ async def test_client():
 
 
 async def mock_db_settings():
-    auth.debug_user_id = "d306f620-2083-4c55-b66f-7171fffecc2b"
-    auth.auth_debug = 1
     main.TORTOISE_CFG = TORTOISE_TEST_CFG
 
 

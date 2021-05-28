@@ -9,9 +9,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.core.settings import logger, settings
 
 http_bearer = HTTPBearer(auto_error=False)
-auth_debug = settings.auth.debug
-debug_user_id = settings.auth.debug_user_id
-auth_service_url = settings.auth.get_pubkey_url()
+DEBUG = settings.auth.debug
+DEBUG_USER_ID = settings.auth.debug_user_id
+AUTH_URL = settings.auth.get_pubkey_url()
 
 
 class AuthorizedUser:
@@ -70,9 +70,9 @@ async def get_public_key(url: str) -> str:
 
 
 async def get_user(token: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer)) -> Optional[AuthorizedUser]:
-    if auth_debug:
+    if DEBUG:
         debug_claims = {
-            "sub": debug_user_id,
+            "sub": DEBUG_USER_ID,
             "rls": {},
         }
         return AuthorizedUser(debug_claims)
@@ -80,7 +80,7 @@ async def get_user(token: Optional[HTTPAuthorizationCredentials] = Depends(http_
     if not token:
         return None
 
-    public_key: str = await get_public_key(auth_service_url)
+    public_key: str = await get_public_key(AUTH_URL)
 
     claims = _decode_token(token.credentials, public_key)
     if not claims:
