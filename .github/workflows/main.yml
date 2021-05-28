@@ -60,6 +60,8 @@ jobs:
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
       DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
       API_KEY: ${{ secrets.API_KEY }}
+      DEBUG: ${{ secrets.DEBUG }}
+      DEBUG_USER_ID: ${{ secrets.DEBUG_USER_ID }}
 
     steps:
       - name: Checkout Code
