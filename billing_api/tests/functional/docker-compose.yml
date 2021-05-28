@@ -3,8 +3,10 @@ services:
   billing_test_db:
     image: postgres
     container_name: billing_test_db
-    env_file:
-      - .env.test
+    environment:
+      - POSTGRES_USER=billing_user
+      - POSTGRES_PASSWORD=billing_pass
+      - POSTGRES_DB=billing_test
     volumes:
       - /home/billing_test_db/database:/data/db
       - ./init.sql:/docker-entrypoint-initdb.d/init_schema.sql
@@ -13,8 +15,13 @@ services:
   tests:
     container_name: tests
     build: ../..
-    env_file:
-      - .env.test
+    environment:
+      - DB_HOST=billing_test_db
+      - DB_PORT=5432
+      - DB_USER=billing_user
+      - DB_PASSWORD=billing_pass
+      - DB_NAME=billing_test
+      - DB_SCHEMA=data
     entrypoint: >
       sh -c "pip install -r /usr/src/billing_api/tests/functional/requirements.txt
       && pytest /usr/src/billing_api/tests/functional/src"

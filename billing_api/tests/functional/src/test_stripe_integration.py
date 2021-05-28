@@ -1,13 +1,8 @@
 import pytest
 from src.clients.stripe.client import StripeClient
-from src.core.settings import settings
 from src.db.models import Orders, Subscriptions
 from src.models.common import OrderState, PaymentSystem, SubscriptionState
-
-STRIPE_URL = settings.stripe.url
-API_KEY = settings.stripe.api_key
-DEBUG_USER_ID = settings.auth.debug_user_id
-ACCESS_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMzA2ZjYyMC0yMDgzLTRjNTUtYjY2Zi03MTcxZmZmZWNjMmIiLCJpYXQiOjE1MTYyMzkwMjJ9.sf4fYKlDrLwtt55dvC_FKy5_MRLnCeUTOCCG723pNIs"
+from tests.functional.settings import DEBUG_USER_ID, STRIPE_URL, API_KEY, ACCESS_TOKEN
 
 
 @pytest.mark.asyncio
