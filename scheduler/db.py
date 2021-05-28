@@ -9,31 +9,31 @@ class AbstractStorage(ABC):
         self.connection = connection
 
     @abstractmethod
-    def get(self, *args, **kwargs):
+    def get(self, *args, **kwargs) -> List:
         pass
 
     @abstractmethod
-    def get_active_subscriptions(self, *args, **kwargs):
+    def get_active_subscriptions(self, *args, **kwargs) -> List:
         pass
 
     @abstractmethod
-    def get_pre_active_subscriptions(self, *args, **kwargs):
+    def get_pre_active_subscriptions(self, *args, **kwargs) -> List:
         pass
 
     @abstractmethod
-    def get_pre_deactivate_subscriptions(self, *args, **kwargs):
+    def get_pre_deactivate_subscriptions(self, *args, **kwargs) -> List:
         pass
 
     @abstractmethod
-    def get_overdue_subscriptions(self, *args, **kwargs):
+    def get_overdue_subscriptions(self, *args, **kwargs) -> List:
         pass
 
     @abstractmethod
-    def get_processing_orders(self, *args, **kwargs):
+    def get_processing_orders(self, *args, **kwargs) -> List:
         pass
 
     @abstractmethod
-    def get_overdue_orders(self, *args, **kwargs):
+    def get_overdue_orders(self, *args, **kwargs) -> List:
         pass
 
 
@@ -61,7 +61,7 @@ class PostgresDB(AbstractStorage):
         """
         )
 
-    def get_pre_active_subscriptions(self):
+    def get_pre_active_subscriptions(self) -> List:
         """
         Select pre active subscriptions for activation.
         :return: List of Named Tuple Subscriptions
@@ -72,7 +72,7 @@ class PostgresDB(AbstractStorage):
             """
         )
 
-    def get_pre_deactivate_subscriptions(self):
+    def get_pre_deactivate_subscriptions(self) -> List:
         """
         Select pre active subscriptions for activation.
         :return: List of Named Tuple Subscriptions
@@ -83,7 +83,7 @@ class PostgresDB(AbstractStorage):
             """
         )
 
-    def get_overdue_subscriptions(self):
+    def get_overdue_subscriptions(self) -> List:
         """
         Filter subscription by state=Active and end_date<Current Date, also check if there were 3 or more failed
         automatic payments for this subscription and if there are 3 of them - select this subscriptions. Also check

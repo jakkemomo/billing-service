@@ -73,5 +73,9 @@ jobs:
       - name: Build Docker Images
         run: docker-compose build
 
+      - name: Run Test DB
+        run: docker-compose run -d billing_test_db
+
       - name: Run Tests
-        run: docker-compose up
+        run: docker-compose run tests
+
