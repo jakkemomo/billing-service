@@ -54,3 +54,28 @@ jobs:
       run: |
         mypy .
 
+  test:
+    name: Test suite
+
+    runs-on: ubuntu-latest
+
+    env:
+      COMPOSE_FILE: billing_api/tests/functional/docker-compose.yml
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Login to DockerHub
+        run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+
+      - name: Pull Docker Compose
+        run: sudo curl -L https://github.com/docker/compose/releases/download/1.29.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose && sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Build Docker Images
+        run: docker-compose build
+
+      - name: Run Tests
+        run: docker-compose up

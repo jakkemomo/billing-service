@@ -49,7 +49,3 @@ create table if not exists data.orders (
               src_order_id uuid references data.orders on update cascade on delete restrict,
               created timestamptz default now(),
               modified timestamptz default now());
-create user scheduler with password 'scheduler';
-grant connect on database billing to scheduler;
-grant usage on schema data to scheduler;
-grant select on all tables in schema data to scheduler;

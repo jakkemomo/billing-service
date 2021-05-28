@@ -7,7 +7,7 @@ services:
       - .env.test
     volumes:
       - /home/billing_test_db/database:/data/db
-      - ../../../db/init.sql:/docker-entrypoint-initdb.d/init_schema.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init_schema.sql
     restart: unless-stopped
 
   tests:
@@ -18,3 +18,5 @@ services:
     entrypoint: >
       sh -c "pip install -r /usr/src/billing_api/tests/functional/requirements.txt
       && pytest /usr/src/billing_api/tests/functional/src"
+    depends_on:
+      - billing_test_db
