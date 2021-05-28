@@ -45,10 +45,6 @@ jobs:
       run: |
         isort .
 
-    - name: wemake-python-styleguide
-      id: flake8
-      run: flake8 .
-
     - name: Check types
       id: mypy
       run: |
