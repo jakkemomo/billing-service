@@ -4,10 +4,13 @@ from os import environ as env
 import pytest
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
+from src.clients import stripe_adapter
 from src.db.models import Orders, PaymentMethods, Products, Subscriptions
 
 from billing_api.src import main
 from billing_api.src.main import app, shutdown, startup
+from src.services import auth
+from tests.functional.settings import API_KEY, DEBUG_USER_ID
 
 load_dotenv()
 
@@ -44,6 +47,7 @@ TORTOISE_TEST_CFG = {
 
 @pytest.fixture(scope="session", autouse=True)
 async def test_client():
+    await mock_api_settings()
     await mock_db_settings()
     client = TestClient(app)
     await startup()
@@ -55,6 +59,12 @@ async def test_client():
 
 async def mock_db_settings():
     main.TORTOISE_CFG = TORTOISE_TEST_CFG
+
+
+async def mock_api_settings():
+    stripe_adapter.API_KEY = API_KEY
+    auth.DEBUG = 1
+    auth.DEBUG_USER_ID = DEBUG_USER_ID
 
 
 async def setup_db():
