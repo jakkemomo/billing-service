@@ -1,3 +1,5 @@
+"""Module with API models"""
+
 from datetime import date
 from decimal import Decimal
 from uuid import UUID
@@ -8,17 +10,23 @@ from .common import OrderState, PaymentSystem, SubscriptionState
 
 
 class PaymentInfoIn(BaseModel):
+    """Input payment data model"""
+
     product_id: str
     email: str
     payment_system: PaymentSystem
 
 
 class PaymentInfoOut(BaseModel):
+    """Output payment data model"""
+
     payment_system: str
     client_secret: str
 
 
 class PaymentMethodOut(BaseModel):
+    """Output payment method model"""
+
     id: UUID
     type: str
     payment_system: PaymentSystem
@@ -27,6 +35,8 @@ class PaymentMethodOut(BaseModel):
 
 
 class ProductOut(BaseModel):
+    """Output product model"""
+
     id: UUID
     name: str
     description: str
@@ -36,6 +46,8 @@ class ProductOut(BaseModel):
 
 
 class SubscriptionOut(BaseModel):
+    """Output subscription model"""
+
     product: ProductOut
     start_date: date
     end_date: date
@@ -43,6 +55,8 @@ class SubscriptionOut(BaseModel):
 
 
 class OrderOut(BaseModel):
+    """Output order model"""
+
     product: ProductOut
     payment_system: PaymentSystem
     state: OrderState
