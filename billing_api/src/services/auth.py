@@ -1,6 +1,10 @@
+"""
+Module with user authorization service
+"""
+
 import logging
 from datetime import datetime
-from typing import Optional, Set
+from typing import Any, Dict, Optional, Set
 
 import backoff
 from aiohttp import ClientConnectorError, ClientSession, ServerConnectionError
@@ -25,10 +29,14 @@ BACKOFF_MAX_VALUE = settings.backoff.max_value
 
 
 class GettingPubKeyError(Exception):
+    """Exception class for error while getting a public key for a token verifying"""
+
     pass
 
 
 class AuthorizedUser:
+    """Class to store a user token data"""
+
     def __init__(self, token_claims: dict):
         self._id = token_claims["sub"]
         self._roles = token_claims["rls"].keys()
@@ -36,24 +44,48 @@ class AuthorizedUser:
 
     @property
     def id(self):
+        """Property to get user identifier"""
         return self._id
 
     @staticmethod
     def _get_permissions(roles: dict) -> Set[str]:
+        """
+        Get all user permissions
+
+        @param roles: `dict` with user roles and permissions
+        @return: `set` of user permissions
+        """
         user_permissions = set()
         for permissions in roles.values():
             user_permissions.update(permissions)
         return user_permissions
 
     def has_permissions(self, *permissions) -> bool:
+        """
+        Check if user has all `permissions`
+
+        @param permissions: list of permissions to compare with user ones
+        @return:
+        """
         return self._permissions.issuperset(permissions)
 
     def is_superuser(self) -> bool:
+        """
+        Check if user has **superuser** role
+
+        @return: `True` if he has one. Otherwise, `False`.
+        """
         return "superuser" in self._roles
 
 
-def _decode_token(token: str, public_key: str):
-    """Метод проверки подписи и актуальности токена"""
+def _validate_token(token: str, public_key: str) -> Optional[Dict[str, Any]]:
+    """
+    Token Validation Check
+
+    @param token: JWT token string
+    @param public_key: Public key to verify token signature
+    @return: `dict` with token claims if token is valid. Otherwise, `None`.
+    """
     try:
         claims = jwt.decode(token, public_key)
     except (BadSignatureError, JoseError):
@@ -78,6 +110,14 @@ def _decode_token(token: str, public_key: str):
     max_value=BACKOFF_MAX_VALUE,
 )
 async def get_public_key(url: str) -> str:
+    """
+    Get public key from Auth service to check token signature
+
+    @param url: Auth service API endpoint path
+    @return: public key string
+    @raise:
+        - `GettingPubKeyError`: if response status code from auth service is not 200
+    """
     async with ClientSession() as session:
         async with session.get(url) as resp:
             if resp.status != 200:
@@ -90,6 +130,12 @@ async def get_public_key(url: str) -> str:
 async def get_user(
     token: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
 ) -> Optional[AuthorizedUser]:
+    """
+    User authorization dependency
+
+    @param token: `HTTPAuthorizationCredentials` class instance or `None`
+    @return: `AuthorizedUser` class instance
+    """
     if DEBUG:
         debug_claims = {
             "sub": DEBUG_USER_ID,
@@ -102,7 +148,7 @@ async def get_user(
 
     public_key = await get_public_key(AUTH_URL)
 
-    claims = _decode_token(token.credentials, public_key)
+    claims = _validate_token(token.credentials, public_key)
     if not claims:
         return None
 
