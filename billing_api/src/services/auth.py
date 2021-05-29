@@ -1,17 +1,31 @@
+import logging
 from datetime import datetime
 from typing import Optional, Set
 
-import aiohttp
+import backoff
+from aiohttp import ClientConnectorError, ClientSession, ServerConnectionError
+from async_lru import alru_cache
 from authlib.jose import jwt
 from authlib.jose.errors import BadSignatureError, ExpiredTokenError, JoseError
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from src.core.settings import logger, settings
+from src.core.settings import settings
+
+logger = logging.getLogger(__name__)
 
 http_bearer = HTTPBearer(auto_error=False)
+
 DEBUG = settings.auth.debug
 DEBUG_USER_ID = settings.auth.debug_user_id
 AUTH_URL = settings.auth.get_pubkey_url()
+
+BACKOFF_FACTOR = settings.backoff.factor
+BACKOFF_BASE = settings.backoff.base
+BACKOFF_MAX_VALUE = settings.backoff.max_value
+
+
+class GettingPubKeyError(Exception):
+    pass
 
 
 class AuthorizedUser:
@@ -55,18 +69,22 @@ def _decode_token(token: str, public_key: str):
     return claims
 
 
+@alru_cache(cache_exceptions=False)
+@backoff.on_exception(
+    backoff.expo,
+    (ClientConnectorError, ServerConnectionError, GettingPubKeyError),
+    base=BACKOFF_BASE,
+    factor=BACKOFF_FACTOR,
+    max_value=BACKOFF_MAX_VALUE,
+)
 async def get_public_key(url: str) -> str:
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status != 200:
-                    logger.error("Error while getting public key from auth service!")
-                    return ""
-                body = await resp.json()
-                return body.get("public_key", "")
-    except Exception as e:
-        logger.error(f"Error while getting public key from auth service: {e}")
-        return ""
+    async with ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status != 200:
+                logger.error("Error while getting public key from auth service")
+                raise GettingPubKeyError()
+            body = await resp.json()
+            return body["public_key"]
 
 
 async def get_user(
@@ -82,7 +100,7 @@ async def get_user(
     if not token:
         return None
 
-    public_key: str = await get_public_key(AUTH_URL)
+    public_key = await get_public_key(AUTH_URL)
 
     claims = _decode_token(token.credentials, public_key)
     if not claims:
