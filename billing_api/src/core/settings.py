@@ -18,10 +18,10 @@ load_dotenv()
 class DatabaseSettings(BaseSettings):
     host: str = Field("localhost", env="DB_HOST")
     port: int = Field(5432, env="DB_PORT")
-    user: str = Field("postgres", env="DB_USER")
-    password: str = Field("postgres", env="DB_PASSWORD")
-    database: str = Field("postgres", env="DB_NAME")
-    scheme: str = Field("public", env="DB_SCHEMA", alias="schema")
+    user: str = Field("jaqombo", env="DB_USER")
+    password: str = Field("12345", env="DB_PASSWORD")
+    database: str = Field("billing", env="DB_NAME")
+    scheme: str = Field("data", env="DB_SCHEMA", alias="schema")
 
 
 class StripeSettings(BaseSettings):
