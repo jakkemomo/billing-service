@@ -62,7 +62,6 @@ async def mock_db_settings():
 
 
 async def mock_api_settings():
-    stripe_adapter.API_KEY = STRIPE_API_KEY
     auth.DEBUG = 1
     auth.DEBUG_USER_ID = DEBUG_USER_ID
 

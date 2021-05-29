@@ -38,7 +38,7 @@ services:
     container_name: billing_api
     command: python3 src/main.py
     env_file:
-      - billing_api/src/core/.end.prod
+      - billing_api/src/core/.env.prod
     expose:
       - 8787
     depends_on:
