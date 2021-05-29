@@ -42,7 +42,9 @@ class AuthSettings(BaseSettings):
     host: str = Field("0.0.0.0", env="AUTH_HOST")
     port: int = Field(8001, env="AUTH_PORT")
     pubkey_path: str = Field("api/v1/auth/pubkey", env="AUTH_PUBKEY_PATH")
-    roles_path_pattern: str = Field("api/v1/admin/user/%s/role/%s", env="ROLES_PATH_PATTERN")
+    roles_path_pattern: str = Field(
+        "api/v1/admin/user/%s/role/%s", env="ROLES_PATH_PATTERN"
+    )
 
     def get_pubkey_url(self):
         return f"{self.scheme}://{self.host}:{self.port}/{self.pubkey_path}"

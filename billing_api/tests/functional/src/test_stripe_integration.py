@@ -29,11 +29,9 @@ class TestUser:
         assert body.get("client_secret") is not None
 
     async def test_order_and_sub_after_user_payment(self):
-        order = (
-            await Orders.filter(user_id=test_settings.DEBUG_USER_ID)
-            .prefetch_related("subscription", "product")
-            .first()
-        )
+        order = await Orders.get_or_none(
+            user_id=test_settings.DEBUG_USER_ID
+        ).prefetch_related("subscription", "product")
         assert order.state == OrderState.DRAFT
         assert order.product.id == pytest.product_id
         assert order.external_id is not False
@@ -46,9 +44,7 @@ class TestUser:
         assert order.subscription.state == SubscriptionState.INACTIVE
 
     async def test_customer_payment_method(self):
-        """
-        This functionality is made from User to Stripe directly. Imitate a user inserting a payment method.
-        """
+        """ This functionality is made from User to Stripe directly. Imitate a user inserting a payment method."""
         stripe = StripeClient(api_key=test_settings.STRIPE_API_KEY, url=STRIPE_URL)
         data = {
             "type": "card",
@@ -62,7 +58,7 @@ class TestUser:
 
         response = await stripe._request(
             method="post",
-            url=stripe.url + f"/payment_methods/{pytest.payment_method_id}/attach",
+            url=f"{stripe.url}/payment_methods/{pytest.payment_method_id}/attach",
             data={"customer": test_settings.DEBUG_USER_ID},
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -77,7 +73,7 @@ class TestUser:
 
         response = await stripe._request(
             method="post",
-            url=stripe.url + f"/payment_intents/{order.external_id}/confirm",
+            url=f"{stripe.url}/payment_intents/{order.external_id}/confirm",
             data={"payment_method": pytest.payment_method_id},
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -92,9 +88,9 @@ class TestUser:
         assert response.status_code == 200
 
     async def test_entities_after_payment_confirmation(self):
-        order = await Orders.get_or_none(user_id=test_settings.DEBUG_USER_ID).prefetch_related(
-            "subscription", "payment_method"
-        )
+        order = await Orders.get_or_none(
+            user_id=test_settings.DEBUG_USER_ID
+        ).prefetch_related("subscription", "payment_method")
         assert order.state == OrderState.PAID
 
         subscription = order.subscription
@@ -126,7 +122,8 @@ class TestUser:
 
     def test_get_active_subscription(self, test_client):
         response = test_client.get(
-            "/api/user/subscription", headers={"Authentication": test_settings.ACCESS_TOKEN}
+            "/api/user/subscription",
+            headers={"Authentication": test_settings.ACCESS_TOKEN},
         )
         assert response.status_code == 200
         body = response.json()
@@ -137,7 +134,8 @@ class TestUser:
 
     def test_refund_request(self, test_client):
         response = test_client.post(
-            "/api/user/subscription/refund", headers={"Authentication": test_settings.ACCESS_TOKEN}
+            "/api/user/subscription/refund",
+            headers={"Authentication": test_settings.ACCESS_TOKEN},
         )
         assert response.status_code == 200
 
@@ -147,6 +145,7 @@ class TestUser:
 
     def test_get_active_subscription_after_refund(self, test_client):
         response = test_client.get(
-            "/api/user/subscription", headers={"Authentication": test_settings.ACCESS_TOKEN}
+            "/api/user/subscription",
+            headers={"Authentication": test_settings.ACCESS_TOKEN},
         )
         assert response.status_code == 404

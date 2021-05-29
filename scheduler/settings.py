@@ -18,3 +18,4 @@ class Settings(BaseSettings):
     REQUEST_DELAY: int = 1
     BILLING_API_HOST: str = Field("localhost", env="BILLING_API_HOST")
     BILLING_API_PORT: str = Field("8787", env="BILLING_API_PORT")
+    SERVICE_URL: str = f"http://{BILLING_API_HOST}:{BILLING_API_PORT}/api/service"

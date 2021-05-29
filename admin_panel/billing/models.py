@@ -13,9 +13,7 @@ NULL_BLANK_FALSE = {"null": False, "blank": False}
 
 
 class OrderState(models.TextChoices):
-    """
-    Модель статусов заказов.
-    """
+    """ Модель статусов заказов """
 
     draft = "draft", _("Черновик")
     processing = "processing", _("В процессе")
@@ -24,9 +22,7 @@ class OrderState(models.TextChoices):
 
 
 class SubscriptionState(models.TextChoices):
-    """
-    Модель статусов подписок.
-    """
+    """ Модель статусов подписок """
 
     active = "active", _("Активна")
     pre_active = "pre_active", _("Оплачена")
@@ -36,21 +32,41 @@ class SubscriptionState(models.TextChoices):
 
 
 class Product(TimeStampedModel, UUIDModel):
-    """
-    Модель продукта.
-    """
+    """ Модель продукта """
 
-    name = models.CharField(_("название"), max_length=50, **NULL_BLANK_FALSE)
-    description = models.TextField(_("описание"), **NULL_BLANK)
-    role_id = models.UUIDField(verbose_name=_("роль"), **NULL_BLANK_FALSE)
+    name = models.CharField(
+        _("название"),
+        max_length=50,
+        **NULL_BLANK_FALSE,
+    )
+    description = models.TextField(
+        _("описание"),
+        **NULL_BLANK,
+    )
+    role_id = models.UUIDField(
+        verbose_name=_("роль"),
+        **NULL_BLANK_FALSE,
+    )
     price = models.DecimalField(
-        verbose_name=_("цена"), max_digits=10, decimal_places=2, **NULL_BLANK_FALSE
+        verbose_name=_("цена"),
+        max_digits=10,
+        decimal_places=2,
+        **NULL_BLANK_FALSE,
     )
-    period = models.IntegerField(verbose_name=_("период"), **NULL_BLANK_FALSE)
+    period = models.IntegerField(
+        verbose_name=_("период"),
+        **NULL_BLANK_FALSE,
+    )
     active = models.BooleanField(
-        verbose_name=_("активен"), default=False, **NULL_BLANK_FALSE
+        verbose_name=_("активен"),
+        default=False,
+        **NULL_BLANK_FALSE,
     )
-    currency_code = models.CharField(_("код валюты"), max_length=3, **NULL_BLANK_FALSE)
+    currency_code = models.CharField(
+        _("код валюты"),
+        max_length=3,
+        **NULL_BLANK_FALSE,
+    )
 
     class Meta:
         verbose_name = _("продукт")
@@ -62,9 +78,7 @@ class Product(TimeStampedModel, UUIDModel):
 
 
 class Subscription(TimeStampedModel, UUIDModel):
-    """
-    Модель подписки.
-    """
+    """ Модель пользовательской подписки """
 
     product = models.ForeignKey(
         Product,
@@ -73,9 +87,18 @@ class Subscription(TimeStampedModel, UUIDModel):
         on_delete=models.RESTRICT,
         **NULL_BLANK_FALSE,
     )
-    user_id = models.UUIDField(verbose_name=_("пользователь"), **NULL_BLANK_FALSE)
-    start_date = models.DateField(verbose_name=_("дата начала"), **NULL_BLANK_FALSE)
-    end_date = models.DateField(verbose_name=_("дата окончания"), **NULL_BLANK_FALSE)
+    user_id = models.UUIDField(
+        verbose_name=_("пользователь"),
+        **NULL_BLANK_FALSE,
+    )
+    start_date = models.DateField(
+        verbose_name=_("дата начала"),
+        **NULL_BLANK_FALSE,
+    )
+    end_date = models.DateField(
+        verbose_name=_("дата окончания"),
+        **NULL_BLANK_FALSE,
+    )
     state = models.CharField(
         _("статус"),
         max_length=20,
@@ -94,20 +117,31 @@ class Subscription(TimeStampedModel, UUIDModel):
 
 
 class PaymentMethod(TimeStampedModel, UUIDModel):
-    """
-    Модель метода оплаты.
-    """
+    """ Модель метода оплаты """
 
     external_id = models.CharField(
-        _("внешний идентификатор"), max_length=50, **NULL_BLANK_FALSE
+        _("внешний идентификатор"),
+        max_length=50,
+        **NULL_BLANK_FALSE,
     )
-    user_id = models.UUIDField(verbose_name=_("пользователь"), **NULL_BLANK_FALSE)
+    user_id = models.UUIDField(
+        verbose_name=_("пользователь"),
+        **NULL_BLANK_FALSE,
+    )
     payment_system = models.CharField(
-        _("платежная система"), max_length=50, **NULL_BLANK_FALSE
+        _("платежная система"),
+        max_length=50,
+        **NULL_BLANK_FALSE,
     )
-    type = models.CharField(_("тип"), max_length=50, **NULL_BLANK_FALSE)
+    type = models.CharField(
+        _("тип"),
+        max_length=50,
+        **NULL_BLANK_FALSE,
+    )
     is_default = models.BooleanField(
-        verbose_name=_("по умолчанию"), default=False, **NULL_BLANK_FALSE
+        verbose_name=_("по умолчанию"),
+        default=False,
+        **NULL_BLANK_FALSE,
     )
     data = models.JSONField(
         "информация для фронта",
@@ -127,15 +161,21 @@ class PaymentMethod(TimeStampedModel, UUIDModel):
 
 
 class Order(TimeStampedModel, UUIDModel):
-    """
-    Модель заказа.
-    """
+    """ Модель заказа """
 
     external_id = models.CharField(
-        _("внешний идентификатор"), max_length=50, **NULL_BLANK
+        _("внешний идентификатор"),
+        max_length=50,
+        **NULL_BLANK,
     )
-    user_id = models.UUIDField(verbose_name=_("пользователь"), **NULL_BLANK_FALSE)
-    user_email = models.CharField(max_length=35, **NULL_BLANK_FALSE)
+    user_id = models.UUIDField(
+        verbose_name=_("пользователь"),
+        **NULL_BLANK_FALSE,
+    )
+    user_email = models.CharField(
+        max_length=35,
+        **NULL_BLANK_FALSE,
+    )
     product = models.ForeignKey(
         Product,
         verbose_name=_("продукт"),
@@ -172,19 +212,30 @@ class Order(TimeStampedModel, UUIDModel):
         **NULL_BLANK_FALSE,
     )
     payment_amount = models.DecimalField(
-        verbose_name=_("цена"), max_digits=10, decimal_places=2, **NULL_BLANK_FALSE
+        verbose_name=_("цена"),
+        max_digits=10,
+        decimal_places=2,
+        **NULL_BLANK_FALSE,
     )
     payment_currency_code = models.CharField(
-        _("код валюты"), max_length=3, **NULL_BLANK_FALSE
+        _("код валюты"),
+        max_length=3,
+        **NULL_BLANK_FALSE,
     )
     payment_system = models.CharField(
-        _("платежная система"), max_length=50, **NULL_BLANK_FALSE
+        _("платежная система"),
+        max_length=50,
+        **NULL_BLANK_FALSE,
     )
     is_automatic = models.BooleanField(
-        verbose_name=_("автоматический"), default=False, **NULL_BLANK_FALSE
+        verbose_name=_("автоматический"),
+        default=False,
+        **NULL_BLANK_FALSE,
     )
     is_refund = models.BooleanField(
-        verbose_name=_("возврат"), default=False, **NULL_BLANK_FALSE
+        verbose_name=_("возврат"),
+        default=False,
+        **NULL_BLANK_FALSE,
     )
 
     class Meta:

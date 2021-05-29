@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 from fastapi.testclient import TestClient
 from src.clients import stripe_adapter
 from src.db.models import Orders, PaymentMethods, Products, Subscriptions
+from src.services import auth
+from tests.functional.settings import test_settings
 
 from billing_api.src import main
 from billing_api.src.main import app, shutdown, startup
-from src.services import auth
-from tests.functional.settings import test_settings
 
 load_dotenv()
 

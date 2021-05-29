@@ -27,8 +27,8 @@ class AuthorizedUser:
     @staticmethod
     def _get_permissions(roles: dict) -> Set[str]:
         user_permissions = set()
-        for role_name in roles:
-            user_permissions.update(roles[role_name])
+        for permissions in roles.values():
+            user_permissions.update(permissions)
         return user_permissions
 
     def has_permissions(self, *permissions) -> bool:
@@ -69,7 +69,9 @@ async def get_public_key(url: str) -> str:
         return ""
 
 
-async def get_user(token: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer)) -> Optional[AuthorizedUser]:
+async def get_user(
+    token: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
+) -> Optional[AuthorizedUser]:
     if DEBUG:
         debug_claims = {
             "sub": DEBUG_USER_ID,

@@ -8,6 +8,7 @@ from scheduler.db import AbstractStorage, PostgresDB
 from scheduler.settings import Settings, logger
 
 settings = Settings()
+SERVICE_URL = settings.SERVICE_URL
 
 
 class Scheduler:
@@ -91,7 +92,7 @@ class Scheduler:
                 f"Sending request to Billing API to update a subscription with id {subscription_id}"
             )
             requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/subscription/{subscription_id}/recurring_payment"
+                f"{SERVICE_URL}/subscription/{subscription_id}/recurring_payment"
             )
         except Exception as e:
             logger.error(
@@ -110,9 +111,7 @@ class Scheduler:
             logger.info(
                 f"Sending request to Billing API to activate a subscription with id {subscription_id}"
             )
-            requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/subscription/{subscription_id}/activate"
-            )
+            requests.post(f"{SERVICE_URL}/subscription/{subscription_id}/activate")
 
         except Exception as e:
             logger.error(
@@ -131,9 +130,7 @@ class Scheduler:
             logger.info(
                 f"Sending request to Billing API to cancel a subscription with id {subscription_id}"
             )
-            requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/subscription/{subscription_id}/deactivate"
-            )
+            requests.post(f"{SERVICE_URL}/subscription/{subscription_id}/deactivate")
         except Exception as e:
             logger.error(
                 "Error while sending a request to cancel a subscription to Billing API: %s"
@@ -151,9 +148,7 @@ class Scheduler:
             logger.info(
                 f"Sending request to Billing API to update an order with id {order_id}"
             )
-            requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/order/{order_id}/update_info"
-            )
+            requests.post(f"{SERVICE_URL}/order/{order_id}/update_info")
         except Exception as e:
             logger.error(
                 f"Error while sending a request to update an order to Billing API: {e}"
@@ -170,9 +165,7 @@ class Scheduler:
             logger.info(
                 f"Sending request to Billing API to cancel an order with id {order_id}"
             )
-            requests.post(
-                f"http://{settings.BILLING_API_HOST}:{settings.BILLING_API_PORT}/api/service/order/{order_id}/cancel"
-            )
+            requests.post(f"{SERVICE_URL}/order/{order_id}/cancel")
         except Exception as e:
             logger.error(
                 f"Error while sending a request to cancel an order to Billing API: {e}"

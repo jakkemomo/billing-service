@@ -67,7 +67,9 @@ async def update_order_info(order_id: str):
                 payment_method=payment_method,
             )
             logger.info(
-                f"Order {order.id} updated successfully with state {order_status.value} and payment method {payment_method.id}."
+                f"""
+            Order {order.id} updated successfully with state {order_status.value} and payment method {payment_method.id}.
+            """
             )
 
         else:
@@ -82,9 +84,7 @@ async def update_order_info(order_id: str):
 
 @service_router.post("/order/{order_id}/cancel", status_code=200)
 async def cancel_order(order_id: str):
-    """
-    Order is moving to the Error state by service application.
-    """
+    """ Order is moving to the Error state by service application."""
 
     order = await OrderRepository.get(order_id)
     if not order:
@@ -102,8 +102,7 @@ async def cancel_order(order_id: str):
 
 @service_router.post("/subscription/{subscription_id}/activate", status_code=200)
 async def activate_subscription(
-    subscription_id: str,
-    roles_service: RolesService = Depends(get_roles_service),
+    subscription_id: str, roles_service: RolesService = Depends(get_roles_service)
 ):
     subscription = await SubscriptionRepository.get(subscription_id)
     if not subscription:
@@ -165,14 +164,16 @@ async def withdraw_subscription_price(subscription_id: str):
             order.id, external_id=payment.id, state=payment.state
         )
         logger.info(
-            f"Recurring payment for subscription {subscription.id} created successfully: Payment {payment.id} / Order {order.id}"
+            f"""
+        Recurring payment for subscription {subscription.id} created successfully:
+        Payment {payment.id} / Order {order.id}
+        """
         )
 
 
 @service_router.post("/subscription/{subscription_id}/deactivate", status_code=200)
 async def deactivate_subscription(
-    subscription_id: str,
-    roles_service: RolesService = Depends(get_roles_service),
+    subscription_id: str, roles_service: RolesService = Depends(get_roles_service)
 ):
     """ Subscription deactivating by service applications """
     subscription = await SubscriptionRepository.get(subscription_id)
