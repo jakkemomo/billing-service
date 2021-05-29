@@ -7,9 +7,10 @@ from pydantic import BaseModel
 
 class SubscriptionState(str, Enum):
     ACTIVE = "active"
-    PRE_ACTIVE = "pre_active"
     INACTIVE = "inactive"
     CANCELLED = "cancelled"
+    PRE_ACTIVE = "pre_active"
+    TO_DEACTIVATE = "to_deactivate"
 
 
 class OrderState(str, Enum):

@@ -12,15 +12,15 @@ class CardDataExtractor(AbcPMDExtractor):
     @staticmethod
     def extract(data: dict) -> dict:
         return {
-            'brand': data['brand'],
-            'exp_month': data['exp_month'],
-            'exp_year': data['exp_year'],
-            'last4': data['last4'],
+            "brand": data["brand"],
+            "exp_month": data["exp_month"],
+            "exp_year": data["exp_year"],
+            "last4": data["last4"],
         }
 
 
 _MAPPING = {
-    'card': CardDataExtractor,
+    "card": CardDataExtractor,
 }
 
 

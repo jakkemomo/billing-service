@@ -24,37 +24,55 @@ def convert_payment_state(payment_intent: StripePaymentIntent) -> OrderState:
     charges = payment_intent.charges.data
     charge = charges[0] if charges else None
     charge_status = charge.status if charge else None
-
-    if pi_status == StripePaymentStatus.SUCCEEDED:
-        return OrderState.PAID
-
-    if pi_status == StripePaymentStatus.PROCESSING:
-        return OrderState.PROCESSING
-
-    if pi_status == StripePaymentStatus.REQUIRES_ACTIONS:
-        return OrderState.DRAFT
+    charge_status_mapping = {
+        StripeChargeStatus.FAILED: OrderState.ERROR,
+        StripeChargeStatus.PENDING: OrderState.PROCESSING
+    }
+    pi_status_mapping = {
+        StripePaymentStatus.SUCCEEDED: OrderState.PAID,
+        StripePaymentStatus.PROCESSING: OrderState.PROCESSING,
+        StripePaymentStatus.REQUIRES_ACTIONS: OrderState.DRAFT,
+    }
+    order_state = pi_status_mapping.get(pi_status)
+    if order_state:
+        return order_state
+    # if pi_status == StripePaymentStatus.SUCCEEDED:
+    #     return OrderState.PAID
+    #
+    # if pi_status == StripePaymentStatus.PROCESSING:
+    #     return OrderState.PROCESSING
+    #
+    # if pi_status == StripePaymentStatus.REQUIRES_ACTIONS:
+    #     return OrderState.DRAFT
 
     if is_automatic:
         if pi_status == StripePaymentStatus.REQUIRES_PAYMENT_METHOD:
             # В случае, когда платеж выполнялся автоматически, всегда будет `charge`
-            if charge_status == StripeChargeStatus.FAILED:
-                return OrderState.ERROR
-            elif charge_status == StripeChargeStatus.PENDING:
-                return OrderState.PROCESSING
+            status = charge_status_mapping.get(charge_status)
+            if status:
+                return status
+            # if charge_status == StripeChargeStatus.FAILED:
+            #     return OrderState.ERROR
+            # elif charge_status == StripeChargeStatus.PENDING:
+            #     return OrderState.PROCESSING
     else:
         if pi_status == StripePaymentStatus.REQUIRES_PAYMENT_METHOD:
             if charge:
-                if charge_status == StripeChargeStatus.FAILED:
-                    return OrderState.DRAFT
-                elif charge_status == StripeChargeStatus.PENDING:
-                    return OrderState.PROCESSING
+                status = charge_status_mapping.get(charge_status)
+                if status:
+                    return status
+                # if charge_status == StripeChargeStatus.FAILED:
+                #     return OrderState.ERROR
+                # elif charge_status == StripeChargeStatus.PENDING:
+                #     return OrderState.PROCESSING
             else:
                 return OrderState.DRAFT
         return OrderState.PROCESSING
 
 
 def convert_refund_status(status: StripeChargeStatus) -> OrderState:
-    """Отображение статуса возврата на статус заказа.
+    """
+    Отображение статуса возврата на статус заказа.
 
     Так как в процессе работы рассматриваем возврат как заказ, то необходимо выполнить
     отображение статуса возврата на статус заказа для корректного хранения в БД и дальнейшей

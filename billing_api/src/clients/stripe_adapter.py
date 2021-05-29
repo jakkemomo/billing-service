@@ -12,6 +12,9 @@ from .stripe.utils.converters import (
 )
 from .stripe.utils.extractors import get_pmd_extractor
 
+STRIPE_URL = settings.stripe.url
+API_KEY = settings.stripe.api_key
+
 
 class StripeClientAdapter(AbstractClientAdapter):
     def __init__(self, client: StripeClient):
@@ -97,7 +100,5 @@ class StripeClientAdapter(AbstractClientAdapter):
 
 
 def get_stripe_adapter() -> AbstractClientAdapter:
-    url = settings.stripe.url
-    api_key = settings.stripe.api_key
-    client = StripeClient(url, api_key)
+    client = StripeClient(STRIPE_URL, API_KEY)
     return StripeClientAdapter(client)

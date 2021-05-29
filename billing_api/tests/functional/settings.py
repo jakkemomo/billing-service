@@ -1,10 +1,23 @@
-from os import environ as env
+import os
 
+import jwt
 from dotenv import load_dotenv
+from pydantic import BaseSettings
 
 load_dotenv()
 
-SERVICE_URL: str = env.get("SERVICE_URL", "http://0.0.0.0:8092")
-# DB_HOST: str = env.get("DB_HOST", "127.0.0.1")
-# DB_PORT: str = env.get("DB_PORT", "27017")
-# DB_NAME: str = env.get("DB_NAME", "user_data_test")
+
+class TestSettings(BaseSettings):
+    STRIPE_API_KEY: str = os.environ.get("STRIPE_API_KEY", "test-api-key")
+    DEBUG_USER_ID: str = "d306f620-2083-4c55-b66f-7171fffecc2b"
+    ACCESS_TOKEN = str(
+        jwt.encode(
+            headers={"alg": "HS256", "typ": "JWT"},
+            payload={"sub": DEBUG_USER_ID, "iat": 1516239022},
+            key="private-sign",
+            algorithm="HS256",
+        )
+    )
+
+
+test_settings = TestSettings()

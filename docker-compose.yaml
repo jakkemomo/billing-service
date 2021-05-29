@@ -7,9 +7,9 @@ services:
     command: python3 main.py
     depends_on:
       - billing_db
-    restart: always
     env_file:
       - scheduler/.env.prod
+    restart: always
 
   billing-admin-panel:
     build: admin_panel
@@ -23,11 +23,12 @@ services:
       - static_volume:/usr/src/admin_panel/config/static
 
   billing_db:
-    image: postgres
+    image: postgres:13
     container_name: billing_db
     volumes:
-      - billing_db_data:/var/lib/postgresql/data/
+      - pg_data:/var/lib/postgresql/data/
       - ./db/init.sql:/docker-entrypoint-initdb.d/init_schema.sql
+      - ./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     env_file:
       - db/.env.prod
     restart: unless-stopped
@@ -36,6 +37,8 @@ services:
     build: billing_api
     container_name: billing_api
     command: python3 src/main.py
+    env_file:
+      - billing_api/src/core/.env.prod
     expose:
       - 8787
     depends_on:
@@ -57,11 +60,11 @@ services:
     restart: always
 
 volumes:
-  billing_db_data:
+  pg_data:
   static_volume:
   billing_nginx_logs:
     name: billing_nginx_logs
-#networks:
-#  default:
-#    external:
-#      name: auth_sprint_2_dotnetwork
+networks:
+  default:
+    external:
+      name: auth_sprint_main_online_cinema

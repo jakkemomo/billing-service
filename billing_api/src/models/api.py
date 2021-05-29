@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from .common import OrderState, PaymentSystem
+from .common import OrderState, PaymentSystem, SubscriptionState
 
 
 class PaymentInfoIn(BaseModel):
@@ -23,7 +23,7 @@ class PaymentMethodOut(BaseModel):
     type: str
     payment_system: PaymentSystem
     is_default: bool
-    data: dict
+    data: str
 
 
 class ProductOut(BaseModel):
@@ -39,6 +39,7 @@ class SubscriptionOut(BaseModel):
     product: ProductOut
     start_date: date
     end_date: date
+    state: SubscriptionState
 
 
 class OrderOut(BaseModel):

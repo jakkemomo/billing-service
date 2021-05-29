@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional
 from uuid import uuid4
 
@@ -42,7 +43,7 @@ class PaymentMethodRepository:
                 payment_system=payment_system,
                 type=payment_type,
                 is_default=True,
-                data=data,
+                data=json.dumps(data),
                 created=timezone.now(),
                 modified=timezone.now(),
             )

@@ -17,7 +17,7 @@ class SubscriptionRepository:
     async def get_user_subscription(user_id: str) -> Optional[Subscriptions]:
         return await Subscriptions.get_or_none(
             user_id=user_id,
-            state=SubscriptionState.ACTIVE,
+            state__in=[SubscriptionState.ACTIVE, SubscriptionState.PRE_ACTIVE],
         ).prefetch_related("product")
 
     @staticmethod
@@ -54,6 +54,13 @@ class SubscriptionRepository:
     async def pre_activate(subscription_id: str):
         await Subscriptions.filter(pk=subscription_id).update(
             state=SubscriptionState.PRE_ACTIVE,
+            modified=timezone.now(),
+        )
+
+    @staticmethod
+    async def to_deactivate(subscription_id: str):
+        await Subscriptions.filter(pk=subscription_id).update(
+            state=SubscriptionState.TO_DEACTIVATE,
             modified=timezone.now(),
         )
 

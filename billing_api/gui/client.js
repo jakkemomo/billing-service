@@ -12,10 +12,11 @@ var purchase = {
 
 // Disable the button until we have Stripe set up on the page
 document.querySelector("button").disabled = true;
-fetch("/api/payment_intent", {
+fetch("/api/user/payment", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
+    "Authorization": "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtb3ZpZXMtYXV0aC1zZXJ2aWNlIiwiYXVkIjoibW92aWVzLWF1dGgtc2VydmljZSIsImV4cCI6MTYyMjA0MDY1My40OTIxMTUsImlhdCI6MTYyMjAzODg1My40OTIxMTUsInNpZCI6IjdhNjA3NjlmLWM4ZTctNDYyZi05M2JlLWMwMmE4MGU4MjRhNSIsInN1YiI6IjNmYzFlMTFhLWQ3YTEtNDIzMS1hY2EwLTMxNTk4YmY1ZTA4NCIsInJscyI6e319.UxUzwrH5E8n2uzrc2ra7g1yMpBlqp47k0VZeW8g1WYRp4idTcRSzh98IxZ8jmNgY4bsVBTlEQoX1glJnlJev15gsLcv6Q-JNpoLJjUgrzZ4e_J44xB6fBQE3qQEgbd7Heupkk-IP6-LBoR64wn2_aG4KNjwqozWU5_oGPsUgueP1FIclDJULXh9hi-kAB8ODC6INEbRbWQRuNDokr7g__DwXzHcaihRz8xBBx2IZ-TW6Fk6UFnPDoPAepkaPqGrSbIFqHBxol88uBeN_QLmFl22E-FHMn60uKOyQ90c9lX8okt2k5pMiVnx7XtsDo6iGJ-q0ecLmnk3ZV8JmtNsQKg"
   },
   body: JSON.stringify(purchase),
 })
@@ -89,12 +90,12 @@ var payWithCard = function (stripe, card, clientSecret) {
 // Shows a success message when the payment is complete
 var orderComplete = function (paymentIntentId) {
   loading(false);
-  document
-    .querySelector(".result-message a")
-    .setAttribute(
-      "href",
-      "https://dashboard.stripe.com/test/payments/" + paymentIntentId
-    );
+  // document
+  //   .querySelector(".result-message a")
+  //   .setAttribute(
+  //     "href",
+  //     "https://dashboard.stripe.com/test/payments/" + paymentIntentId
+  //   );
   document.querySelector(".result-message").classList.remove("hidden");
   document.querySelector("button").disabled = true;
 };

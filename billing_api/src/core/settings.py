@@ -1,15 +1,16 @@
 import logging
 import pathlib
+from logging.config import dictConfig
 
 from dotenv import load_dotenv
 from pydantic import BaseSettings, Field
-
-from .logging import LOGGING_CFG
+from src.core.logging import LOGGING_CFG
 
 BASE_DIR = pathlib.Path(__file__).parent.parent
 DEFAULT_CONFIG_PATH = BASE_DIR / "config.json"
 
-logging.config.dictConfig(LOGGING_CFG)
+logger = logging.getLogger(__name__)
+dictConfig(LOGGING_CFG)
 
 load_dotenv()
 
@@ -17,10 +18,10 @@ load_dotenv()
 class DatabaseSettings(BaseSettings):
     host: str = Field("localhost", env="DB_HOST")
     port: int = Field(5432, env="DB_PORT")
-    user: str = Field("postgres", env="DB_USER")
-    password: str = Field("postgres", env="DB_PASSWORD")
-    database: str = Field("postgres", env="DB_NAME")
-    scheme: str = Field("public", env="DB_SCHEMA", alias="schema")
+    user: str = Field("jaqombo", env="DB_USER")
+    password: str = Field("12345", env="DB_PASSWORD")
+    database: str = Field("billing", env="DB_NAME")
+    scheme: str = Field("data", env="DB_SCHEMA", alias="schema")
 
 
 class StripeSettings(BaseSettings):
@@ -41,7 +42,9 @@ class AuthSettings(BaseSettings):
     host: str = Field("0.0.0.0", env="AUTH_HOST")
     port: int = Field(8001, env="AUTH_PORT")
     pubkey_path: str = Field("api/v1/auth/pubkey", env="AUTH_PUBKEY_PATH")
-    roles_path_pattern: str = Field("api/v1/admin/user/%s/role/%s", env="ROLES_PATH_PATTERN")
+    roles_path_pattern: str = Field(
+        "api/v1/admin/user/%s/role/%s", env="ROLES_PATH_PATTERN"
+    )
 
     def get_pubkey_url(self):
         return f"{self.scheme}://{self.host}:{self.port}/{self.pubkey_path}"

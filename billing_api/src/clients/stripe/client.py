@@ -1,4 +1,3 @@
-import logging
 from uuid import uuid4
 
 import backoff
@@ -20,8 +19,6 @@ from .utils.exception_handlers import handle_response
 BACKOFF_FACTOR = settings.backoff.factor
 BACKOFF_BASE = settings.backoff.base
 BACKOFF_MAX_VALUE = settings.backoff.max_value
-
-logger = logging.getLogger(__name__)
 
 
 class StripeClient:

@@ -5,9 +5,7 @@ from .models import Order, PaymentMethod, Product, Subscription
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    """
-    Панель администрирования заказов.
-    """
+    """ Панель администрирования заказов. """
 
     list_display = ["product", "user_id"]
     fields = [
@@ -28,9 +26,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    """
-    Панель администрирования продуктов.
-    """
+    """ Панель администрирования продуктов. """
 
     list_display = ["name", "description", "price", "period"]
     fields = [
@@ -47,9 +43,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    """
-    Панель администрирования подписок.
-    """
+    """ Панель администрирования подписок. """
 
     list_display = ["product", "user_id", "start_date", "end_date", "state"]
     fields = ["product", "user_id", "start_date", "end_date", "state"]
@@ -59,9 +53,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 @admin.register(PaymentMethod)
 class PaymentMethodAdmin(admin.ModelAdmin):
-    """
-    Панель администрирования методов оплаты.
-    """
+    """ Панель администрирования методов оплаты. """
 
     list_display = ["user_id", "payment_system", "type"]
     fields = ["external_id", "user_id", "payment_system", "type", "is_default", "data"]
