@@ -59,7 +59,7 @@ jobs:
       COMPOSE_FILE: billing_api/tests/functional/docker-compose.yml
       DOCKER_USER: ${{ secrets.DOCKER_USER }}
       DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-      API_KEY: ${{ secrets.API_KEY }}
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
       DEBUG: ${{ secrets.DEBUG }}
       DEBUG_USER_ID: ${{ secrets.DEBUG_USER_ID }}
 

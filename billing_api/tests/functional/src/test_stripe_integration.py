@@ -2,7 +2,7 @@ import pytest
 from src.clients.stripe.client import StripeClient
 from src.db.models import Orders, Subscriptions
 from src.models.common import OrderState, PaymentSystem, SubscriptionState
-from tests.functional.settings import DEBUG_USER_ID, STRIPE_URL, API_KEY, ACCESS_TOKEN
+from tests.functional.settings import DEBUG_USER_ID, STRIPE_URL, STRIPE_API_KEY, ACCESS_TOKEN
 
 
 @pytest.mark.asyncio
@@ -46,7 +46,7 @@ class TestUser:
         """
         This functionality is made from User to Stripe directly. Imitate a user inserting a payment method.
         """
-        stripe = StripeClient(api_key=API_KEY, url=STRIPE_URL)
+        stripe = StripeClient(api_key=STRIPE_API_KEY, url=STRIPE_URL)
         data = {
             "type": "card",
             "card[number]": "4242424242424242",
@@ -68,7 +68,7 @@ class TestUser:
 
     async def test_customer_payment_validation(self):
         """ This functionality is made from User to Stripe directly. Imitate confirming a payment intent"""
-        stripe = StripeClient(api_key=API_KEY, url=STRIPE_URL)
+        stripe = StripeClient(api_key=STRIPE_API_KEY, url=STRIPE_URL)
         order = await Orders.filter(user_id=DEBUG_USER_ID).first()
         pytest.main_order = order.id
 
