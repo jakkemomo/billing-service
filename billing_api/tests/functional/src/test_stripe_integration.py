@@ -1,8 +1,11 @@
 import pytest
 from src.clients.stripe.client import StripeClient
+from src.core.settings import settings
 from src.db.models import Orders, Subscriptions
 from src.models.common import OrderState, PaymentSystem, SubscriptionState
-from tests.functional.settings import DEBUG_USER_ID, STRIPE_URL, STRIPE_API_KEY, ACCESS_TOKEN
+from tests.functional.settings import test_settings
+
+STRIPE_URL = settings.stripe.url
 
 
 @pytest.mark.asyncio
@@ -27,7 +30,7 @@ class TestUser:
 
     async def test_order_and_sub_after_user_payment(self):
         order = (
-            await Orders.filter(user_id=DEBUG_USER_ID)
+            await Orders.filter(user_id=test_settings.DEBUG_USER_ID)
             .prefetch_related("subscription", "product")
             .first()
         )
@@ -46,7 +49,7 @@ class TestUser:
         """
         This functionality is made from User to Stripe directly. Imitate a user inserting a payment method.
         """
-        stripe = StripeClient(api_key=STRIPE_API_KEY, url=STRIPE_URL)
+        stripe = StripeClient(api_key=test_settings.STRIPE_API_KEY, url=STRIPE_URL)
         data = {
             "type": "card",
             "card[number]": "4242424242424242",
@@ -60,16 +63,16 @@ class TestUser:
         response = await stripe._request(
             method="post",
             url=stripe.url + f"/payment_methods/{pytest.payment_method_id}/attach",
-            data={"customer": DEBUG_USER_ID},
+            data={"customer": test_settings.DEBUG_USER_ID},
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        assert response.body["customer"] == DEBUG_USER_ID
+        assert response.body["customer"] == test_settings.DEBUG_USER_ID
         assert response.body["id"] == pytest.payment_method_id
 
     async def test_customer_payment_validation(self):
         """ This functionality is made from User to Stripe directly. Imitate confirming a payment intent"""
-        stripe = StripeClient(api_key=STRIPE_API_KEY, url=STRIPE_URL)
-        order = await Orders.filter(user_id=DEBUG_USER_ID).first()
+        stripe = StripeClient(api_key=test_settings.STRIPE_API_KEY, url=STRIPE_URL)
+        order = await Orders.filter(user_id=test_settings.DEBUG_USER_ID).first()
         pytest.main_order = order.id
 
         response = await stripe._request(
@@ -89,7 +92,7 @@ class TestUser:
         assert response.status_code == 200
 
     async def test_entities_after_payment_confirmation(self):
-        order = await Orders.get_or_none(user_id=DEBUG_USER_ID).prefetch_related(
+        order = await Orders.get_or_none(user_id=test_settings.DEBUG_USER_ID).prefetch_related(
             "subscription", "payment_method"
         )
         assert order.state == OrderState.PAID
@@ -99,7 +102,7 @@ class TestUser:
         assert subscription.state == SubscriptionState.PRE_ACTIVE
 
         payment_method = order.payment_method
-        assert str(payment_method.user_id) == DEBUG_USER_ID
+        assert str(payment_method.user_id) == test_settings.DEBUG_USER_ID
         assert payment_method.external_id == pytest.payment_method_id
         assert payment_method.payment_system == PaymentSystem.STRIPE.value
         assert payment_method.is_default is True
@@ -119,11 +122,11 @@ class TestUser:
     async def test_subscription_state_after_activation(self):
         sub = await Subscriptions.get_or_none(pk=pytest.subscription_id)
         assert sub.state == SubscriptionState.ACTIVE
-        assert str(sub.user_id) == DEBUG_USER_ID
+        assert str(sub.user_id) == test_settings.DEBUG_USER_ID
 
     def test_get_active_subscription(self, test_client):
         response = test_client.get(
-            "/api/user/subscription", headers={"Authentication": ACCESS_TOKEN}
+            "/api/user/subscription", headers={"Authentication": test_settings.ACCESS_TOKEN}
         )
         assert response.status_code == 200
         body = response.json()
@@ -134,7 +137,7 @@ class TestUser:
 
     def test_refund_request(self, test_client):
         response = test_client.post(
-            "/api/user/subscription/refund", headers={"Authentication": ACCESS_TOKEN}
+            "/api/user/subscription/refund", headers={"Authentication": test_settings.ACCESS_TOKEN}
         )
         assert response.status_code == 200
 
@@ -144,6 +147,6 @@ class TestUser:
 
     def test_get_active_subscription_after_refund(self, test_client):
         response = test_client.get(
-            "/api/user/subscription", headers={"Authentication": ACCESS_TOKEN}
+            "/api/user/subscription", headers={"Authentication": test_settings.ACCESS_TOKEN}
         )
         assert response.status_code == 404
