@@ -77,7 +77,6 @@ jobs:
         run: docker-compose run -d billing_test_db
 
       - name: Run Tests
-        env:
-          STRIPE_TEST_API_KEY: ${{ secrets.STRIPE_TEST_API_KEY }}
         run: docker-compose run tests
+
 
