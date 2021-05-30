@@ -1,3 +1,5 @@
+"""Module with Stripe client definition"""
+
 from uuid import uuid4
 
 import backoff
@@ -22,6 +24,8 @@ BACKOFF_MAX_VALUE = settings.backoff.max_value
 
 
 class StripeClient:
+    """Class to interact with Stripe API"""
+
     def __init__(self, url: str, api_key: str):
         self.url = url
         self.api_key = api_key
@@ -71,6 +75,15 @@ class StripeClient:
     async def create_customer(
         self, user_id: str, email: str = None
     ) -> StripeCustomerInner:
+        """
+        Create a customer
+
+        @param user_id: user identifier in the Stripe payment system
+        @param email: user email to send notifications
+        @note: user identifier may be specified the same as database identifier for convenience
+        @return: class `StripeCustomerInner` if customer is created or already exists
+        @raise: exceptions from `exceptions.py` file
+        """
         customer: StripeCustomerInner = StripeCustomerInner(
             id=user_id,
             email=email,
@@ -85,12 +98,29 @@ class StripeClient:
         return customer
 
     async def get_payment(self, payment_intent_id: str) -> StripePaymentIntent:
+        """
+        Retrieves the details of a PaymentIntent that has previously been created
+
+        @param payment_intent_id: payment intent identifier in the Stripe payment system
+        @return: class `StripePaymentIntent` instance
+        @raise: exceptions from `exceptions.py` file
+        """
         resp = await self._get("payment_intent", payment_intent_id)
         return StripePaymentIntent.parse_obj(resp.body)
 
     async def create_payment(
         self, customer_id: str, amount: int, currency: str, email: str
     ) -> StripePaymentIntent:
+        """
+        Creates a PaymentIntent object
+
+        @param customer_id: ID of the Customer this PaymentIntent belongs to, if one exists
+        @param amount: Amount intended to be collected by this PaymentIntent
+        @param currency: Three-letter ISO currency code, in lowercase
+        @param email: Customer email to send notifications
+        @return: class `StripePaymentIntent` instance
+        @raise: exceptions from `exceptions.py` file
+        """
         metadata = {
             "metadata[is_automatic]": 0,
         }
@@ -113,6 +143,16 @@ class StripeClient:
         currency: str,
         payment_method_id: str,
     ) -> StripePaymentIntent:
+        """
+         Create recurring payment intent
+
+        @param customer_id: ID of the Customer this PaymentIntent belongs to, if one exists
+        @param amount: Amount intended to be collected by this PaymentIntent
+        @param currency: Three-letter ISO currency code, in lowercase
+        @param payment_method_id: ID of the payment method to attach to this PaymentIntent
+        @return: class `StripePaymentIntent` instance
+        @raise: exceptions from `exceptions.py` file
+        """
         metadata = {
             "metadata[is_automatic]": 1,
         }
@@ -136,10 +176,27 @@ class StripeClient:
         return StripePaymentIntent.parse_obj(payment_data)
 
     async def get_refund(self, refund_id: str) -> StripeRefund:
+        """
+        Retrieve a refund information
+
+        @param refund_id: refund identifier
+        @return: class `StripeRefund` instance if a valid ID was provided, raise an exception otherwise
+        @raise: exceptions from `exceptions.py` file
+        """
         resp = await self._get("refund", refund_id)
         return StripeRefund.parse_obj(resp.body)
 
     async def create_refund(self, payment_intent_id: str, amount: int) -> StripeRefund:
+        """
+        Create a refund
+
+        @param payment_intent_id: ID of the PaymentIntent to refund
+        @param amount: a positive integer in cents representing how much of this charge to refund,
+        can refund only up to the remaining, unrefunded amount of the charge
+        @return: class `StripeRefund` instance if the refund succeeded, raise an exception if the PaymentIntent
+        has already been refunded, or if an invalid identifier was provided
+        @raise: exceptions from `exceptions.py` file
+        """
         refund: StripeRefundInner = StripeRefundInner(
             payment_intent=payment_intent_id,
             amount=amount,

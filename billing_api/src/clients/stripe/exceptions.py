@@ -1,3 +1,5 @@
+"""Module with Stripe client exceptions definitions"""
+
 from .models import HTTPResponse
 
 
@@ -7,7 +9,7 @@ class StripeBaseException(Exception):
         self._response = response
 
     @property
-    def response(self):
+    def response(self) -> HTTPResponse:
         return self._response
 
 
