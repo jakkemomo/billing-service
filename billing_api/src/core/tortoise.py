@@ -1,3 +1,5 @@
+"""Module with tortoise configuration options"""
+
 from .settings import settings
 
 TORTOISE_CFG = {
