@@ -1,6 +1,8 @@
+"""Module with user API paths definition"""
+
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import parse_obj_as
 from src.clients import get_payment_gateway
 from src.core.settings import logger
@@ -17,6 +19,17 @@ from src.models.api import (
     SubscriptionOut,
 )
 from src.models.common import OrderState
+from src.resources.error_messages import (
+    ACTIVE_SUBSCRIPTION_NOT_FOUND,
+    PAID_ORDER_NOT_FOUND,
+    PRODUCT_NOT_FOUND,
+    SUBSCRIPTION_EXPIRED,
+    UNAUTHORIZED_USER,
+    USER_HAS_DRAFT_ORDER,
+    USER_HAS_NO_UNPAID_ORDERS,
+    USER_HAS_PROCESSING_ORDER,
+    USER_HAS_SUBSCRIPTION,
+)
 from src.services.auth import AuthorizedUser, get_user
 from src.utils.refund import calculate_refund_amount
 from tortoise.transactions import in_transaction
@@ -34,16 +47,14 @@ async def create_payment(
         logger.debug(
             f"Error while making a payment. User with email {payment_info_in.email} is not authorized."
         )
-        raise HTTPException(status_code=403, detail="Unauthorized user")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=UNAUTHORIZED_USER)
 
     subscription = await SubscriptionRepository.get_user_subscription(user.id)
     if subscription:
         logger.debug(
             f"Error while making a payment. User {user.id} already has an active subscription"
         )
-        raise HTTPException(
-            status_code=409, detail="User already has active an subscription"
-        )
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=USER_HAS_SUBSCRIPTION)
 
     unpaid_order = await OrderRepository.get_unpaid_order(user.id)
     if unpaid_order:
@@ -52,21 +63,21 @@ async def create_payment(
                 f"Error while making a payment. User {user.id} already has an order in process"
             )
             raise HTTPException(
-                status_code=409, detail="User already has an order in process"
+                status.HTTP_409_CONFLICT, detail=USER_HAS_PROCESSING_ORDER
             )
 
         if unpaid_order.state == OrderState.DRAFT:
             logger.debug(
                 f"Error while making a payment. User {user.id} has a draft order"
             )
-            raise HTTPException(status_code=409, detail="User has a draft order")
+            raise HTTPException(status.HTTP_409_CONFLICT, detail=USER_HAS_DRAFT_ORDER)
 
     product = await ProductRepository.get_by_id(payment_info_in.product_id)
     if not product:
         logger.debug(
             f"Error while making a payment for user {user.id}. Product not found"
         )
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=PRODUCT_NOT_FOUND)
 
     logger.info(f"Making a payment order for user {user.id} with product {product.id}")
     async with in_transaction():
@@ -112,14 +123,14 @@ async def get_draft_order(
     """ Draft order getting by user """
     if not user:
         logger.debug("Error while getting draft order. User is not authorized.")
-        raise HTTPException(status_code=403, detail="Unauthorized user")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=UNAUTHORIZED_USER)
 
     unpaid_order = await OrderRepository.get_unpaid_order(user.id)
     if not unpaid_order:
         logger.debug(
             f"Error while getting draft order. User {user.id} has no unpaid orders."
         )
-        raise HTTPException(status_code=404, detail="User has no unpaid orders")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=USER_HAS_NO_UNPAID_ORDERS)
 
     payment_gateway = get_payment_gateway(unpaid_order.payment_system)
     payment = await payment_gateway.get_payment(unpaid_order)
@@ -138,7 +149,7 @@ async def get_payment_methods(
     """ Payment methods getting by user """
     if not user:
         logger.debug("Error while trying to access payment methods. Unauthorized user.")
-        raise HTTPException(status_code=403, detail="Unauthorized user")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=UNAUTHORIZED_USER)
 
     payment_methods: List[
         PaymentMethods
@@ -154,7 +165,7 @@ async def get_products(
     """ Products list getting by user """
     if not user:
         logger.debug("Error while trying to access products. Unauthorized user.")
-        raise HTTPException(status_code=403, detail="Unauthorized user")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=UNAUTHORIZED_USER)
 
     products: List[Products] = await ProductRepository.get_active_products()
     return parse_obj_as(List[ProductOut], products)
@@ -167,14 +178,16 @@ async def get_subscription(
     """ Subscription info getting by user """
     if not user:
         logger.debug("Error while trying to access subscription. Unauthorized user.")
-        raise HTTPException(status_code=403, detail="Unauthorized user")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=UNAUTHORIZED_USER)
 
     subscription = await SubscriptionRepository.get_user_subscription(user.id)
     if not subscription:
         logger.debug(
             f"Error while trying to access subscription. User {user.id} has no active subscriptions."
         )
-        raise HTTPException(status_code=404, detail="Active subscription not found")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=ACTIVE_SUBSCRIPTION_NOT_FOUND
+        )
 
     return parse_obj_as(SubscriptionOut, subscription)
 
@@ -186,14 +199,16 @@ async def cancel_subscription(
     """ Subscription cancelling by user """
     if not user:
         logger.debug("Error while trying to cancel subscription. Unauthorized user.")
-        raise HTTPException(status_code=403, detail="Unauthorized user")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=UNAUTHORIZED_USER)
 
     subscription = await SubscriptionRepository.get_user_subscription(user.id)
     if not subscription:
         logger.debug(
             f"Error while trying to cancel subscription. User {user.id} has no active subscriptions."
         )
-        raise HTTPException(status_code=404, detail="User has no active subscriptions")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=ACTIVE_SUBSCRIPTION_NOT_FOUND
+        )
 
     await SubscriptionRepository.cancel(subscription.id)
 
@@ -205,21 +220,23 @@ async def refund_subscription(
     """ Payment refunding by user """
     if not user:
         logger.debug("Error while trying to refund a subscription. Unauthorized user.")
-        raise HTTPException(status_code=403, detail="Unauthorized user")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=UNAUTHORIZED_USER)
 
     subscription = await SubscriptionRepository.get_user_subscription(user.id)
     if not subscription:
         logger.debug(
             f"Error while trying to refund subscription. User {user.id} has no active subscriptions."
         )
-        raise HTTPException(status_code=404, detail="Active subscription not found")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail=ACTIVE_SUBSCRIPTION_NOT_FOUND
+        )
 
     order = await OrderRepository.get_subscription_order(user.id, subscription.id)
     if not order:
         logger.debug(
             f"Error while trying to refund subscription. User {user.id} has no paid orders."
         )
-        raise HTTPException(status_code=404, detail="Paid order not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=PAID_ORDER_NOT_FOUND)
 
     refund_amount = calculate_refund_amount(
         subscription.end_date,
@@ -231,7 +248,7 @@ async def refund_subscription(
         logger.debug(
             f"Error during the calculation of refund amount for the oder {order.id}."
         )
-        raise HTTPException(status_code=400, detail="Subscription has ended")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=SUBSCRIPTION_EXPIRED)
 
     logger.info(
         f"Making a refund for user {user.id} / subscription {subscription.id} / {order.id}"
@@ -248,6 +265,5 @@ async def refund_subscription(
         logger.info(f"Successfully created a refund order {refund_order.id}")
 
         await SubscriptionRepository.to_deactivate(refund_order.subscription.id)
-        # воркер будет проверять заказы (рефанды) со статусом пейд для таких подписок, и если он находит такой ордер,
-        # то будет посылать запрос в биллинг апи на отмену этой подписки
+
         logger.info(f"Subscription {subscription.id} is going to be deactivated soon")

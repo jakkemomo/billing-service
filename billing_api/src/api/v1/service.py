@@ -1,12 +1,23 @@
+"""Module with service API paths definition"""
+
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from src.clients import get_payment_gateway
 from src.db.models import Orders
 from src.db.repositories.order import OrderRepository
 from src.db.repositories.payment_method import PaymentMethodRepository
 from src.db.repositories.subscription import SubscriptionRepository
 from src.models.common import OrderState, SubscriptionState
+from src.resources.error_messages import (
+    INACTIVE_PRODUCT,
+    ORDER_IS_PAID,
+    ORDER_NOT_FOUND,
+    PAYMENT_METHOD_NOT_FOUND,
+    SUBSCRIPTION_NOT_FOUND,
+    USER_HAS_ROLE,
+    USER_OR_ROLE_NOT_FOUND,
+)
 from src.services.roles import (
     RoleServiceConflictError,
     RoleServiceNotFoundError,
@@ -15,7 +26,7 @@ from src.services.roles import (
 )
 from tortoise.transactions import in_transaction
 
-service_router = APIRouter(prefix="/service")
+service_router = APIRouter(prefix="/service", tags=["service"])
 
 logger = logging.getLogger(__name__)
 
@@ -24,17 +35,13 @@ logger = logging.getLogger(__name__)
 async def update_order_info(order_id: str):
     """
     Order information updating by service applications.
-
-    Order information includes:
-        - order status
-        - payment method if order status is PAID and order is paid by user
     """
     order = await OrderRepository.get(order_id)
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=ORDER_NOT_FOUND)
 
     if order.state == OrderState.PAID:
-        raise HTTPException(status_code=409, detail="Order is paid")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=ORDER_IS_PAID)
 
     payment_gateway = get_payment_gateway(order.payment_system)
 
@@ -75,9 +82,8 @@ async def update_order_info(order_id: str):
                 payment_method=payment_method,
             )
             logger.info(
-                f"""
-            Order {order.id} updated successfully with state {order_status.value} and payment method {payment_method.id}.
-            """
+                f"Order {order.id} updated successfully with state {order_status.value} "
+                f"and payment method {payment_method.id}."
             )
 
         else:
@@ -92,14 +98,15 @@ async def update_order_info(order_id: str):
 
 @service_router.post("/order/{order_id}/cancel", status_code=200)
 async def cancel_order(order_id: str):
-    """ Order is moving to the Error state by service application."""
-
+    """
+    Order is moving to the Error state by service application.
+    """
     order = await OrderRepository.get(order_id)
     if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=ORDER_NOT_FOUND)
 
     if order.state == OrderState.PAID:
-        raise HTTPException(status_code=409, detail="Order is paid")
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=ORDER_IS_PAID)
 
     await OrderRepository.update(
         order.id,
@@ -110,11 +117,15 @@ async def cancel_order(order_id: str):
 
 @service_router.post("/subscription/{subscription_id}/activate", status_code=200)
 async def activate_subscription(
-    subscription_id: str, roles_service: RolesService = Depends(get_roles_service)
+    subscription_id: str,
+    roles_service: RolesService = Depends(get_roles_service),
 ):
+    """
+    Change subscription state to `active`
+    """
     subscription = await SubscriptionRepository.get(subscription_id)
     if not subscription:
-        raise HTTPException(status_code=404, detail="Subscription not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=SUBSCRIPTION_NOT_FOUND)
 
     logger.info(f"Activating subscription {subscription.id}.")
     async with in_transaction():
@@ -135,18 +146,14 @@ async def activate_subscription(
                     f"User {subscription.user_id} already has the role {subscription.product.role_id}."
                     f"Auth service response: {e.msg}"
                 )
-                raise HTTPException(
-                    status_code=409,
-                    detail=f"User {subscription.user_id} already has the role {subscription.product.role_id}",
-                )
+                raise HTTPException(status.HTTP_409_CONFLICT, detail=USER_HAS_ROLE)
             except RoleServiceNotFoundError as e:
                 logger.error(
                     f"User {subscription.user_id} or role {subscription.product.role_id} not found"
                     f"Auth service response: {e.msg}"
                 )
                 raise HTTPException(
-                    status_code=404,
-                    detail=f"User {subscription.user_id} or role {subscription.product.role_id} not found",
+                    status.HTTP_404_NOT_FOUND, detail=USER_OR_ROLE_NOT_FOUND
                 )
 
         logger.info(f"Subscription {subscription_id} was activated successfully")
@@ -156,18 +163,19 @@ async def activate_subscription(
     "/subscription/{subscription_id}/recurring_payment", status_code=200
 )
 async def withdraw_subscription_price(subscription_id: str):
-    """Recurring payment for subscription created by service applications"""
-
+    """
+    Recurring payment for subscription created by service applications
+    """
     subscription = await SubscriptionRepository.get(subscription_id)
     if not subscription:
-        raise HTTPException(status_code=404, detail="Subscription not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=SUBSCRIPTION_NOT_FOUND)
 
     if not subscription.product.active:
-        raise HTTPException(status_code=402, detail="Product is not active")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=INACTIVE_PRODUCT)
 
     payment_method = await PaymentMethodRepository.get_default(subscription.user_id)
     if not payment_method:
-        raise HTTPException(status_code=404, detail="Default payment method not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=PAYMENT_METHOD_NOT_FOUND)
 
     previous_order: Orders = await OrderRepository.get_subscription_order(
         subscription.user_id, subscription_id
@@ -187,28 +195,27 @@ async def withdraw_subscription_price(subscription_id: str):
             order.id, external_id=payment.id, state=payment.state
         )
         logger.info(
-            f"""
-        Recurring payment for subscription {subscription.id} created successfully:
-        Payment {payment.id} / Order {order.id}
-        """
+            f"Recurring payment for subscription {subscription.id} created successfully: "
+            f"Payment {payment.id} / Order {order.id}"
         )
 
 
 @service_router.post("/subscription/{subscription_id}/deactivate", status_code=200)
 async def deactivate_subscription(
-    subscription_id: str, roles_service: RolesService = Depends(get_roles_service)
+    subscription_id: str,
+    roles_service: RolesService = Depends(get_roles_service),
 ):
-    """ Subscription deactivating by service applications """
+    """
+    Subscription deactivating by service applications
+    """
     subscription = await SubscriptionRepository.get(subscription_id)
     if not subscription:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Subscription {subscription_id} not found",
-        )
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=SUBSCRIPTION_NOT_FOUND)
 
     logger.info(f"Deactivating subscription {subscription.id}.")
     async with in_transaction():
         await SubscriptionRepository.deactivate(subscription_id)
+
         try:
             await roles_service.revoke_role(
                 subscription.user_id, subscription.product.role_id
@@ -219,7 +226,7 @@ async def deactivate_subscription(
                 f"Auth service response: {e.msg}"
             )
             raise HTTPException(
-                status_code=404,
-                detail=f"User {subscription.user_id} or role {subscription.product.role_id} not found",
+                status.HTTP_404_NOT_FOUND, detail=USER_OR_ROLE_NOT_FOUND
             )
+
         logger.info(f"Subscription {subscription_id} was deactivated successfully")
