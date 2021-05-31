@@ -1,4 +1,4 @@
-"""Модуль с обработчиками кодов HTTP-ответов API платежной системы Stripe"""
+"""Module with Stripe API status codes handler"""
 from ..exceptions import (
     BadRequest,
     RequestFailed,
@@ -27,6 +27,14 @@ EXCEPTIONS_MAPPING = {
 
 
 def handle_response(response: HTTPResponse) -> HTTPResponse:
+    """
+    Handle Stripe API responses
+
+    @param response: `aiohttp.ClientResponse` response object
+    @return: `aiohttp.ClientResponse` object for the cases where response has status code 200,
+    otherwise, raise exception
+    @raise: one of the exceptions from `EXCEPTIONS_MAPPING` dictionary depending on response status code
+    """
     exception_cls = EXCEPTIONS_MAPPING.get(response.status, None)
     if not exception_cls:
         return response

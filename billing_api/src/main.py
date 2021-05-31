@@ -5,7 +5,10 @@ from src.api.v1.user import user_router
 from src.core.tortoise import TORTOISE_CFG
 from src.db.events import tortoise_init, tortoise_release
 
-app = FastAPI()
+app = FastAPI(
+    title="Billing API",
+    version="1.0.0",
+)
 app.include_router(service_router, prefix="/api")
 app.include_router(user_router, prefix="/api")
 

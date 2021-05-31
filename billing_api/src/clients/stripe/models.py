@@ -1,3 +1,5 @@
+"""Module with Stripe client models definition"""
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional

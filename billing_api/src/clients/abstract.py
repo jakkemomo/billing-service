@@ -1,3 +1,5 @@
+"""Module with abstract client adapter definition"""
+
 import abc
 
 from src.db.models import Orders

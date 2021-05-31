@@ -1,4 +1,4 @@
-from typing import Tuple
+"""Module with ORM models definition"""
 
 from src.models.common import OrderState, SubscriptionState
 from tortoise import fields
@@ -47,9 +47,6 @@ class Products(AbstractModel):
 
     def __str__(self):
         return "Product: %s -- %s %s" % (self.name, self.price, self.currency_code)
-
-    def get_payment_price(self) -> Tuple[int, str]:
-        return int(self.price * 100), str(self.currency_code)
 
 
 class Subscriptions(AbstractModel):

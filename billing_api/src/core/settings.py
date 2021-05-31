@@ -1,3 +1,5 @@
+"""Module with app settings"""
+
 import logging
 import pathlib
 from logging.config import dictConfig
