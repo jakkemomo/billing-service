@@ -1,6 +1,4 @@
-"""
-Module with role management service
-"""
+"""Module with role management service"""
 
 import logging
 
@@ -59,9 +57,7 @@ async def handle_response(resp: ClientResponse) -> ClientResponse:
 
 
 class RolesService:
-    """
-    Class to perform granting and revoking roles to users
-    """
+    """Class to perform granting and revoking roles to users"""
 
     def __init__(self, url_pattern: str):
         self.url_pattern = url_pattern

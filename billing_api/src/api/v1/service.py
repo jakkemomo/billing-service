@@ -33,9 +33,7 @@ logger = logging.getLogger(__name__)
 
 @service_router.post("/order/{order_id}/update_info", status_code=200)
 async def update_order_info(order_id: str):
-    """
-    Order information updating by service applications.
-    """
+    """Order information updating by service applications."""
     order = await OrderRepository.get(order_id)
     if not order:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=ORDER_NOT_FOUND)
@@ -98,9 +96,7 @@ async def update_order_info(order_id: str):
 
 @service_router.post("/order/{order_id}/cancel", status_code=200)
 async def cancel_order(order_id: str):
-    """
-    Order is moving to the Error state by service application.
-    """
+    """Order is moving to the Error state by service application."""
     order = await OrderRepository.get(order_id)
     if not order:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=ORDER_NOT_FOUND)
@@ -120,9 +116,7 @@ async def activate_subscription(
     subscription_id: str,
     roles_service: RolesService = Depends(get_roles_service),
 ):
-    """
-    Change subscription state to `active`
-    """
+    """Change subscription state to `active`."""
     subscription = await SubscriptionRepository.get(subscription_id)
     if not subscription:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=SUBSCRIPTION_NOT_FOUND)
@@ -163,9 +157,7 @@ async def activate_subscription(
     "/subscription/{subscription_id}/recurring_payment", status_code=200
 )
 async def withdraw_subscription_price(subscription_id: str):
-    """
-    Recurring payment for subscription created by service applications
-    """
+    """Recurring payment for subscription created by service applications"""
     subscription = await SubscriptionRepository.get(subscription_id)
     if not subscription:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=SUBSCRIPTION_NOT_FOUND)
@@ -205,9 +197,7 @@ async def deactivate_subscription(
     subscription_id: str,
     roles_service: RolesService = Depends(get_roles_service),
 ):
-    """
-    Subscription deactivating by service applications
-    """
+    """Subscription deactivating by service applications"""
     subscription = await SubscriptionRepository.get(subscription_id)
     if not subscription:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=SUBSCRIPTION_NOT_FOUND)

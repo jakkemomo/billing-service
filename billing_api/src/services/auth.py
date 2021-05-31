@@ -1,6 +1,4 @@
-"""
-Module with user authorization service
-"""
+"""Module with user authorization service"""
 
 import logging
 from datetime import datetime

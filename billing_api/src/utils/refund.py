@@ -1,6 +1,4 @@
-"""
-Module with refund definition way
-"""
+"""Module with refund definition way"""
 
 from datetime import date
 from decimal import Decimal

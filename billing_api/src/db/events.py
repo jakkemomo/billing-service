@@ -13,7 +13,5 @@ async def tortoise_init(config: dict = None):
 
 
 async def tortoise_release():
-    """
-    Release Tortoise ORM resources
-    """
+    """Release Tortoise ORM resources"""
     await Tortoise.close_connections()
