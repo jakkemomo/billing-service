@@ -1,5 +1,3 @@
-from json import JSONDecoder, JSONEncoder
-
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -145,10 +143,8 @@ class PaymentMethod(TimeStampedModel, UUIDModel):
     )
     data = models.JSONField(
         "информация для фронта",
-        default="{}",
-        **NULL_BLANK,
-        decoder=JSONDecoder,
-        encoder=JSONEncoder,
+        default=dict,
+        **NULL_BLANK
     )
 
     class Meta:

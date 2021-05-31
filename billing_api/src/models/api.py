@@ -23,7 +23,7 @@ class PaymentMethodOut(BaseModel):
     type: str
     payment_system: PaymentSystem
     is_default: bool
-    data: str
+    data: dict
 
 
 class ProductOut(BaseModel):

@@ -7,7 +7,7 @@ create table if not exists data.payment_methods (
                payment_system varchar(50) not null,
                type varchar(50) not null,
                is_default boolean default FALSE not null,
-               data json not null,
+               data json,
                created timestamptz default now(),
                modified timestamptz default now());
 create table if not exists data.products (

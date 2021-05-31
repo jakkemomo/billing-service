@@ -8,7 +8,7 @@ from scheduler.db import AbstractStorage, PostgresDB
 from scheduler.settings import Settings, logger
 
 settings = Settings()
-SERVICE_URL = settings.SERVICE_URL
+SERVICE_URL = settings.get_service_url()
 
 
 class Scheduler:

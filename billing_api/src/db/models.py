@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from src.models.common import OrderState, SubscriptionState
+from src.utils.jsonfield import BillingJsonField
 from tortoise import fields
 from tortoise.models import Model
 
@@ -20,7 +21,7 @@ class PaymentMethods(AbstractModel):
     payment_system = fields.CharField(max_length=50, null=False)
     type = fields.CharField(max_length=50, null=False)
     is_default = fields.BooleanField(default=False, null=False)
-    data = fields.JSONField(null=True)
+    data = BillingJsonField(null=True)
 
     class Meta:
         table = "payment_methods"

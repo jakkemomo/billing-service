@@ -4,7 +4,7 @@ from typing import Optional, Set
 import aiohttp
 from authlib.jose import jwt
 from authlib.jose.errors import BadSignatureError, ExpiredTokenError, JoseError
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from src.core.settings import logger, settings
 
@@ -61,12 +61,15 @@ async def get_public_key(url: str) -> str:
             async with session.get(url) as resp:
                 if resp.status != 200:
                     logger.error("Error while getting public key from auth service!")
-                    return ""
+                    raise HTTPException(status_code=503, detail="Error while getting public key from auth service")
                 body = await resp.json()
-                return body.get("public_key", "")
+                public_key = body.get("public_key")
+                if not public_key:
+                    raise HTTPException(status_code=503, detail="Error while getting public key from auth service")
+                return public_key
     except Exception as e:
         logger.error(f"Error while getting public key from auth service: {e}")
-        return ""
+        raise HTTPException(status_code=503, detail="Error while getting public key from auth service")
 
 
 async def get_user(
