@@ -9,7 +9,7 @@ from src.models.common import OrderState, SubscriptionState
 from src.services.roles import RolesService, get_roles_service
 from tortoise.transactions import in_transaction
 
-service_router = APIRouter(prefix="/service")
+service_router = APIRouter(prefix="/service", tags=["Service Endpoints"])
 
 
 @service_router.post("/order/{order_id}/update_info", status_code=200)
