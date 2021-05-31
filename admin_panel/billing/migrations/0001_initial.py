@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 ('payment_system', models.CharField(max_length=50, verbose_name='платежная система')),
                 ('is_automatic', models.BooleanField(default=False, verbose_name='автоматический')),
                 ('is_refund', models.BooleanField(default=False, verbose_name='возврат')),
-                ('payment_method', models.ForeignKey(on_delete=django.db.models.deletion.RESTRICT, related_name='order_payment_method', to='billing.paymentmethod', verbose_name='способ оплаты')),
+                ('payment_method', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.RESTRICT, related_name='order_payment_method', to='billing.paymentmethod', verbose_name='способ оплаты')),
                 ('product', models.ForeignKey(on_delete=django.db.models.deletion.RESTRICT, related_name='order_product', to='billing.product', verbose_name='продукт')),
                 ('src_order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.RESTRICT, related_name='order_to_order', to='billing.order', verbose_name='оригинальный заказ')),
                 ('subscription', models.ForeignKey(on_delete=django.db.models.deletion.RESTRICT, related_name='order_product', to='billing.subscription', verbose_name='подписка')),

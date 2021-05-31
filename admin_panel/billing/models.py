@@ -191,7 +191,7 @@ class Order(TimeStampedModel, UUIDModel):
         verbose_name=_("способ оплаты"),
         related_name="order_payment_method",
         on_delete=models.RESTRICT,
-        **NULL_BLANK_FALSE,
+        **NULL_BLANK,
     )
     src_order = models.ForeignKey(
         "Order",

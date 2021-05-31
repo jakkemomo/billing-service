@@ -7,7 +7,7 @@ from .models import Order, PaymentMethod, Product, Subscription
 class OrderAdmin(admin.ModelAdmin):
     """ Панель администрирования заказов. """
 
-    list_display = ["product", "user_id"]
+    list_display = ["product", "user_id", "state", "is_refund"]
     fields = [
         "external_id",
         "product",
