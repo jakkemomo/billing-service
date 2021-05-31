@@ -34,7 +34,7 @@ from src.services.auth import AuthorizedUser, get_user
 from src.utils.refund import calculate_refund_amount
 from tortoise.transactions import in_transaction
 
-user_router = APIRouter(prefix="/user")
+user_router = APIRouter(prefix="/user", tags=["user"])
 
 
 @user_router.post("/payment", response_model=PaymentInfoOut)
