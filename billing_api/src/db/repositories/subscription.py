@@ -17,7 +17,7 @@ class SubscriptionRepository:
     async def get_user_subscription(user_id: str) -> Optional[Subscriptions]:
         return await Subscriptions.get_or_none(
             user_id=user_id,
-            state__in=[SubscriptionState.ACTIVE, SubscriptionState.PRE_ACTIVE],
+            state__in=[SubscriptionState.ACTIVE, SubscriptionState.PRE_ACTIVE, SubscriptionState.CANCELLED],
         ).prefetch_related("product")
 
     @staticmethod
